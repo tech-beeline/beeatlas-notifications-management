@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 @EnableJpaRepositories(
         entityManagerFactoryRef = "entityManagerFactory",
-        basePackages = { "ru.beeline.fdmauth.repository" }
+        basePackages = { "ru.beeline.fdmnotificationsmanagement.repository" }
 )public class DBConfig {
 
     @Primary
@@ -46,8 +46,8 @@ import javax.sql.DataSource;
     ) {
         return builder
                 .dataSource(dataSource)
-                .packages("ru.beeline.fdmauth.domain")
-                .persistenceUnit("fdmauth")
+                .packages("ru.beeline.fdmnotificationsmanagement.domain")
+                .persistenceUnit("fdmnotificationsmanagement")
                 .build();
     }
 
