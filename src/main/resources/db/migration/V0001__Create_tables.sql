@@ -70,7 +70,7 @@ CREATE TABLE notification."user"
 (
     id integer NOT NULL,
     user_id integer NOT NULL,
-    email integer NOT NULL
+    email varchar(70) NOT NULL
 )
 ;
 
