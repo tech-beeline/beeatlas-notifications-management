@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "change_type_enum", schema = "notification")
+@Table(name = "status_enum", schema = "notification")
 public class StatusEnum {
 
     @Id

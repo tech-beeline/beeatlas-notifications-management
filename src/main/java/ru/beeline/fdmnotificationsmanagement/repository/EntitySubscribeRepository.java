@@ -5,7 +5,11 @@ import org.springframework.stereotype.Repository;
 import ru.beeline.fdmnotificationsmanagement.domain.EntitySubscribe;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface EntitySubscribeRepository extends JpaRepository<EntitySubscribe, Long> {
     Long countByUserIdAndEntityIdAndEntityType(Integer userId, Integer entityId, EntityTypeEnum entityType);
+    List<EntitySubscribe> findAllByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType);
 }
