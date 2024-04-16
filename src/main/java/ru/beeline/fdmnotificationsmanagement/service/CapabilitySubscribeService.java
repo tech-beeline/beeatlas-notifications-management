@@ -143,4 +143,38 @@ public class CapabilitySubscribeService {
                                 .build()
                 ));
     }
+
+    public Integer findOrCreateSubscription(EntityTypeEnum.CapabilitySubscriptionType capabilityType, Integer entityId, Integer userId) {
+        EntityTypeEnum entityTypeEnum;
+        if(capabilityType.equals(EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_WITH_CHILDREN)){
+            entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+            EntityAutoSubscribe entityAutoSubscribe = entityAutoSubscribeRepository.findByUserIdAndEntityType(userId, entityTypeEnum);
+            if(entityAutoSubscribe != null) {
+                SubscribeRule subscribeRule = subscribeRuleRepository.findByParameterNameAndParameterValueAndAutoSubId(
+                        PARENT_ID, String.valueOf(entityId), entityAutoSubscribe.getId());
+                if(subscribeRule != null) return subscribeRule.getId();
+            }
+
+        } else {
+            if (capabilityType.equals(EntityTypeEnum.CapabilitySubscriptionType.TECH)) {
+                entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
+            } else {
+                entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+            }
+
+            EntitySubscribe entitySubscribe = entitySubscribeRepository.findByUserIdAndEntityIdAndEntityType(userId,
+                    entityId, entityTypeEnum);
+            if (entitySubscribe == null) {
+                EntitySubscribe newEntitySubscribe = EntitySubscribe.builder()
+                        .userId(userId)
+                        .entityId(entityId)
+                        .entityType(entityTypeEnum)
+                        .build();
+                newEntitySubscribe = entitySubscribeRepository.save(newEntitySubscribe);
+                return newEntitySubscribe.getId();
+            } else return entitySubscribe.getId();
+        }
+        return null;
+    }
+
 }
