@@ -18,9 +18,7 @@ import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeSubRepositor
 import ru.beeline.fdmnotificationsmanagement.repository.EntitySubscribeRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRuleRepository;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,8 +79,17 @@ public class CapabilitySubscribeService {
     }
 
 
-    public void updateSubscribe(Integer entityId) {
+    public void updateSubscribeBusinessCapability(Integer entityId) {
+        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+        updateSubscribe(entityId, entityTypeEnum);
+    }
+
+    public void updateSubscribeTechCapability(Integer entityId) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
+        updateSubscribe(entityId, entityTypeEnum);
+    }
+
+    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum) {
         List<EntitySubscribe> entitySubscribe = entitySubscribeRepository.findAllByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (!entitySubscribe.isEmpty()) {
             createAndSaveEntityChange(entityId, entityTypeEnum, entitySubscribe);
