@@ -92,9 +92,10 @@ public class CapabilitySubscribeService {
     private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum) {
         List<EntitySubscribe> entitySubscribe = entitySubscribeRepository.findAllByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (!entitySubscribe.isEmpty()) {
-            createAndSaveEntityChange(entityId, entityTypeEnum, entitySubscribe);
+            createAndSaveEntityChange(entityId, entityTypeEnum, entitySubscribe, "tech-capability");
         }
     }
+
     public void createSubscribe(Integer entityId) {
         CapabilityParentDTO capabilityParentDTO = capabilityIntegrationService.getCapabilityParents(entityId);
         if (capabilityParentDTO == null) {
@@ -118,7 +119,10 @@ public class CapabilitySubscribeService {
                 .map(autoSubscribe -> createAndSaveEntitySubscribe(entityId, autoSubscribe.getUserId()))
                 .collect(Collectors.toList());
 
-        createAndSaveEntityChange(entityId, entityTypeEnumService.getTechCapabilityEntityTypeEnum(), entitySubscribes);
+        createAndSaveEntityChange(entityId,
+                entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
+                entitySubscribes,
+                "business-capability");
     }
 
     private EntitySubscribe createAndSaveEntitySubscribe(Integer entityId, Integer userId) {
@@ -131,12 +135,15 @@ public class CapabilitySubscribeService {
                         .build());
     }
 
-    private void createAndSaveEntityChange(Integer entityId, EntityTypeEnum entityTypeEnum, List<EntitySubscribe> entitySubscribes) {
+    private void createAndSaveEntityChange(Integer entityId,
+                                           EntityTypeEnum entityTypeEnum,
+                                           List<EntitySubscribe> entitySubscribes,
+                                           String capabilityType) {
         ChangeTypeEnum changeTypeEnumUpdate = changeTypeEnumService.getUpdateChangeTypeEnum();
         EntityChange entityChange = entityChangeRepository.save(
                 EntityChange.builder()
                         .entityId(entityId)
-                        .link("https://" + gatewayServerUrl + "/api/business-capability/" + entityId)
+                        .link("https://" + gatewayServerUrl + "/api/" + capabilityType + "/" + entityId)
                         .changeType(changeTypeEnumUpdate)
                         .status(statusEnumService.getWaitNotifyStatusEnum())
                         .entityType(entityTypeEnum)
