@@ -32,4 +32,8 @@ public interface SubscribeRuleRepository extends JpaRepository<SubscribeRule, Lo
     List<SubscribeRule> getByParameterNameAndParameterValueAndEntityTypeName(@Param("parameterName") String parameterName,
                                                                              @Param("parameterValue") String parameterValue,
                                                                              @Param("entityTypeName") String entityTypeName);
+
+    SubscribeRule findByParameterNameAndParameterValueAndAutoSubId(String parameterName,
+                                                                         String parameterValue,
+                                                                         Integer autoSubId);
 }

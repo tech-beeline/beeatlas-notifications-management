@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface EntitySubscribeRepository extends JpaRepository<EntitySubscribe, Long> {
     Long countByUserIdAndEntityIdAndEntityType(Integer userId, Integer entityId, EntityTypeEnum entityType);
     List<EntitySubscribe> findAllByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType);
+    EntitySubscribe findByUserIdAndEntityIdAndEntityType(Integer userId, Integer entityId, EntityTypeEnum entityType);
 }
