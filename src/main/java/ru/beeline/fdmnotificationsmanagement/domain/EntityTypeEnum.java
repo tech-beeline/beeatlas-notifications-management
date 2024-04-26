@@ -21,4 +21,11 @@ public class EntityTypeEnum {
 
     @Column(name = "type")
     private String type;
+
+
+    public enum CapabilitySubscriptionType {
+        TECH,
+        BUSINESS,
+        BUSINESS_WITH_CHILDREN
+    }
 }
