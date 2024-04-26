@@ -1,17 +1,9 @@
 package ru.beeline.fdmnotificationsmanagement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.beeline.fdmnotificationsmanagement.controller.RequestContext;
-import ru.beeline.fdmnotificationsmanagement.domain.ChangeTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.repository.ChangeTypeEnumRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.EntitySubscribeRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.EntityTypeEnumRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRuleRepository;
 
 import java.util.Objects;
 
@@ -38,4 +30,7 @@ public class EntityTypeEnumService {
         return businessCapability;
     }
 
+    public EntityTypeEnum getEntityTypeEnumByTypeName(String typeName) {
+        return entityTypeEnumRepository.findByType(typeName);
+    }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilitySubscribeDto;
 import ru.beeline.fdmnotificationsmanagement.service.CapabilitySubscribeService;
@@ -21,6 +22,13 @@ public class CapabilitySubscribeController {
 
     @Autowired
     private CapabilitySubscribeService businessInteractionService;
+
+    @GetMapping("/all-entity-subscribe/{userId}")
+    @ApiOperation(value = "Получить все подписки пользователя", response = List.class)
+    public ResponseEntity<List<Integer>> getAllEntitySubscribeByUserId(@RequestParam(value = "entity-type ") String entityType ,
+                                                                                   @PathVariable(value = "userId") Integer userId) {
+        return ResponseEntity.status(HttpStatus.OK).body(businessInteractionService.getAllEntitySubscribeByUserId(userId, entityType));
+    }
 
     @GetMapping("/tech-capability-subscribe/{id}")
     @ApiOperation(value = "Статус подписки на tech-capability", response = List.class)

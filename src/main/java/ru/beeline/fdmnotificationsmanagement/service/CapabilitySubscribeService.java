@@ -18,6 +18,7 @@ import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeSubRepositor
 import ru.beeline.fdmnotificationsmanagement.repository.EntitySubscribeRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRuleRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -156,5 +157,14 @@ public class CapabilitySubscribeService {
                                 .entityChange(entityChange)
                                 .build()
                 ));
+    }
+
+    public List<Integer> getAllEntitySubscribeByUserId(Integer userId, String entityType) {
+        try {
+            List<EntitySubscribe> entitySubscribes = entitySubscribeRepository.findAllByUserIdAndEntityType(userId, entityTypeEnumService.getEntityTypeEnumByTypeName(entityType));
+            return entitySubscribes.stream().map(EntitySubscribe::getEntityId).collect(Collectors.toList());
+        } catch (Exception e){
+            return new ArrayList<>();
+        }
     }
 }
