@@ -18,6 +18,7 @@ import static ru.beeline.fdmnotificationsmanagement.utils.Constant.USER_ID_HEADE
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
+@RequestMapping("/api/v1")
 @Api(value = "Capability subscribe API", tags = "capability-subscribe")
 public class CapabilitySubscribeController {
 
