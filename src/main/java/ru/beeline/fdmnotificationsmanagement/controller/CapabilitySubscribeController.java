@@ -27,7 +27,7 @@ public class CapabilitySubscribeController {
 
     @GetMapping("/all-entity-subscribe/{userId}")
     @ApiOperation(value = "Получить все подписки пользователя", response = List.class)
-    public ResponseEntity<List<Integer>> getAllEntitySubscribeByUserId(@RequestParam(value = "entity-type ") String entityType ,
+    public ResponseEntity<List<Integer>> getAllEntitySubscribeByUserId(@RequestParam(value = "entity-type") String entityType ,
                                                                                    @PathVariable(value = "userId") Integer userId) {
         return ResponseEntity.status(HttpStatus.OK).body(businessInteractionService.getAllEntitySubscribeByUserId(userId, entityType));
     }
