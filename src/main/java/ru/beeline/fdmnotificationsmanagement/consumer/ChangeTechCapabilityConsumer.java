@@ -33,7 +33,7 @@ public class ChangeTechCapabilityConsumer {
                         capabilitySubscribeService.updateSubscribeTechCapability(entityId);
                         break;
                     case "CREATE":
-                        capabilitySubscribeService.createSubscribe(entityId);
+                        capabilitySubscribeService.createSubscribe(entityId, "TECH_CAPABILITY", "tech-capability");
                         break;
                 }
             } else {
@@ -57,7 +57,7 @@ public class ChangeTechCapabilityConsumer {
                         capabilitySubscribeService.updateSubscribeBusinessCapability(entityId);
                         break;
                     case "CREATE":
-                        capabilitySubscribeService.createSubscribe(entityId);
+                        capabilitySubscribeService.createSubscribe(entityId, "BUSINESS_CAPABILITY", "business-capability");
                         break;
                 }
             } else {

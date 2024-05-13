@@ -82,22 +82,22 @@ public class CapabilitySubscribeService {
 
     public void updateSubscribeBusinessCapability(Integer entityId) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum);
+        updateSubscribe(entityId, entityTypeEnum, "business-capability");
     }
 
     public void updateSubscribeTechCapability(Integer entityId) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum);
+        updateSubscribe(entityId, entityTypeEnum, "tech-capability");
     }
 
-    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum) {
+    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String capabilityType) {
         List<EntitySubscribe> entitySubscribe = entitySubscribeRepository.findAllByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (!entitySubscribe.isEmpty()) {
-            createAndSaveEntityChange(entityId, entityTypeEnum, entitySubscribe, "tech-capability");
+            createAndSaveEntityChange(entityId, entityTypeEnum, entitySubscribe, capabilityType);
         }
     }
 
-    public void createSubscribe(Integer entityId) {
+    public void createSubscribe(Integer entityId, String capabilityTypeName, String capabilityType) {
         CapabilityParentDTO capabilityParentDTO = capabilityIntegrationService.getCapabilityParents(entityId);
         if (capabilityParentDTO == null) {
             return;
@@ -107,7 +107,7 @@ public class CapabilitySubscribeService {
                 .flatMap(parent -> subscribeRuleRepository.getByParameterNameAndParameterValueAndEntityTypeName(
                                 PARENT_ID,
                                 parent.toString(),
-                                "BUSINESS_CAPABILITY").stream()
+                                capabilityTypeName).stream()
                         .map(SubscribeRule::getAutoSubId))
                 .collect(Collectors.toList());
 
@@ -123,7 +123,7 @@ public class CapabilitySubscribeService {
         createAndSaveEntityChange(entityId,
                 entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
                 entitySubscribes,
-                "business-capability");
+                capabilityType);
     }
 
     private EntitySubscribe createAndSaveEntitySubscribe(Integer entityId, Integer userId) {
