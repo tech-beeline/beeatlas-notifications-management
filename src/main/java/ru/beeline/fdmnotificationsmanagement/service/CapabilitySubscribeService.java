@@ -90,6 +90,16 @@ public class CapabilitySubscribeService {
         updateSubscribe(entityId, entityTypeEnum, "tech-capability");
     }
 
+    public void createSubscribeTechCapability(Integer entityId) {
+        CapabilityParentDTO capabilityParentDTO = capabilityIntegrationService.getTechCapabilityParents(entityId);
+        createSubscribe(entityId, "TECH_CAPABILITY", "tech-capability", capabilityParentDTO);
+    }
+
+    public void createSubscribeBusinessCapability(Integer entityId) {
+        CapabilityParentDTO capabilityParentDTO = capabilityIntegrationService.getBusinessCapabilityParents(entityId);
+        createSubscribe(entityId, "BUSINESS_CAPABILITY", "business-capability", capabilityParentDTO);
+    }
+
     private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String capabilityType) {
         List<EntitySubscribe> entitySubscribe = entitySubscribeRepository.findAllByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (!entitySubscribe.isEmpty()) {
@@ -97,8 +107,7 @@ public class CapabilitySubscribeService {
         }
     }
 
-    public void createSubscribe(Integer entityId, String capabilityTypeName, String capabilityType) {
-        CapabilityParentDTO capabilityParentDTO = capabilityIntegrationService.getCapabilityParents(entityId);
+    private void createSubscribe(Integer entityId, String capabilityTypeName, String capabilityType, CapabilityParentDTO capabilityParentDTO) {
         if (capabilityParentDTO == null) {
             return;
         }
@@ -163,20 +172,20 @@ public class CapabilitySubscribeService {
         try {
             List<EntitySubscribe> entitySubscribes = entitySubscribeRepository.findAllByUserIdAndEntityType(userId, entityTypeEnumService.getEntityTypeEnumByTypeName(entityType));
             return entitySubscribes.stream().map(EntitySubscribe::getEntityId).collect(Collectors.toList());
-        } catch (Exception e){
+        } catch (Exception e) {
             return new ArrayList<>();
         }
     }
 
     public Integer findOrCreateSubscription(EntityTypeEnum.CapabilitySubscriptionType capabilityType, Integer entityId, Integer userId) {
         EntityTypeEnum entityTypeEnum;
-        if(capabilityType.equals(EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_WITH_CHILDREN)){
+        if (capabilityType.equals(EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_WITH_CHILDREN)) {
             entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
             EntityAutoSubscribe entityAutoSubscribe = entityAutoSubscribeRepository.findByUserIdAndEntityType(userId, entityTypeEnum);
-            if(entityAutoSubscribe != null) {
+            if (entityAutoSubscribe != null) {
                 SubscribeRule subscribeRule = subscribeRuleRepository.findByParameterNameAndParameterValueAndAutoSubId(
                         PARENT_ID, String.valueOf(entityId), entityAutoSubscribe.getId());
-                if(subscribeRule != null) return subscribeRule.getId();
+                if (subscribeRule != null) return subscribeRule.getId();
             }
 
         } else {

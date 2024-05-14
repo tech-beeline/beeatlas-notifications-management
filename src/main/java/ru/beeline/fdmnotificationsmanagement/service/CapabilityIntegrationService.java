@@ -22,7 +22,7 @@ public class CapabilityIntegrationService {
         this.capabilityServerUrl = capabilityServerUrl;
     }
 
-    public CapabilityParentDTO getCapabilityParents(Integer entityId) {
+    public CapabilityParentDTO getTechCapabilityParents(Integer entityId) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -31,6 +31,25 @@ public class CapabilityIntegrationService {
             HttpEntity<String> entity = new HttpEntity<>(null, headers);
             final RestTemplate restTemplate = getRestTemplate();
             CapabilityParentDTO result = restTemplate.exchange(capabilityServerUrl + "/api/v1/tech-capabilities/" + entityId + "/parents",
+                    HttpMethod.GET, entity, CapabilityParentDTO.class).getBody();
+            if (result.getParents() == null && result.getParents().isEmpty()) {
+                log.error("Parents not found for entityId = " + entityId);
+            }
+            return result;
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+    public CapabilityParentDTO getBusinessCapabilityParents(Integer entityId) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add("SOURCE", "Sparx");
+
+            HttpEntity<String> entity = new HttpEntity<>(null, headers);
+            final RestTemplate restTemplate = getRestTemplate();
+            CapabilityParentDTO result = restTemplate.exchange(capabilityServerUrl + "/api/v1/business-capability/" + entityId + "/parents",
                     HttpMethod.GET, entity, CapabilityParentDTO.class).getBody();
             if (result.getParents() == null && result.getParents().isEmpty()) {
                 log.error("Parents not found for entityId = " + entityId);
