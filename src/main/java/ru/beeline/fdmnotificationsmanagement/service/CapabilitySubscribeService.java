@@ -103,7 +103,7 @@ public class CapabilitySubscribeService {
     private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String capabilityType) {
         List<EntitySubscribe> entitySubscribe = entitySubscribeRepository.findAllByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (!entitySubscribe.isEmpty()) {
-            createAndSaveEntityChange(entityId, entityTypeEnum, entitySubscribe, capabilityType);
+            createAndSaveEntityChange(changeTypeEnumService.getUpdateChangeTypeEnum(), entityId, entityTypeEnum, entitySubscribe, capabilityType);
         }
     }
 
@@ -129,7 +129,7 @@ public class CapabilitySubscribeService {
                 .map(autoSubscribe -> createAndSaveEntitySubscribe(entityId, autoSubscribe.getUserId()))
                 .collect(Collectors.toList());
 
-        createAndSaveEntityChange(entityId,
+        createAndSaveEntityChange(changeTypeEnumService.getCreateChangeTypeEnum(), entityId,
                 entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
                 entitySubscribes,
                 capabilityType);
@@ -145,16 +145,15 @@ public class CapabilitySubscribeService {
                         .build());
     }
 
-    private void createAndSaveEntityChange(Integer entityId,
+    private void createAndSaveEntityChange(ChangeTypeEnum changeType, Integer entityId,
                                            EntityTypeEnum entityTypeEnum,
                                            List<EntitySubscribe> entitySubscribes,
                                            String capabilityType) {
-        ChangeTypeEnum changeTypeEnumUpdate = changeTypeEnumService.getUpdateChangeTypeEnum();
         EntityChange entityChange = entityChangeRepository.save(
                 EntityChange.builder()
                         .entityId(entityId)
-                        .link("https://" + gatewayServerUrl + "/api/" + capabilityType + "/" + entityId)
-                        .changeType(changeTypeEnumUpdate)
+                        .link(gatewayServerUrl + "/api/" + capabilityType + "/" + entityId)
+                        .changeType(changeType)
                         .status(statusEnumService.getWaitNotifyStatusEnum())
                         .entityType(entityTypeEnum)
                         .build());
