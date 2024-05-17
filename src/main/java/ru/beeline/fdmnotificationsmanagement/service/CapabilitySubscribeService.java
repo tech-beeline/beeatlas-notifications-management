@@ -129,8 +129,15 @@ public class CapabilitySubscribeService {
                 .map(autoSubscribe -> createAndSaveEntitySubscribe(entityId, autoSubscribe.getUserId()))
                 .collect(Collectors.toList());
 
+        EntityTypeEnum entityType;
+        if(capabilityTypeName.equals("BUSINESS_CAPABILITY")){
+            entityType = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+        } else {
+            entityType = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
+        }
+
         createAndSaveEntityChange(changeTypeEnumService.getCreateChangeTypeEnum(), entityId,
-                entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
+                entityType,
                 entitySubscribes,
                 capabilityType);
     }
