@@ -8,6 +8,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
 import ru.beeline.fdmnotificationsmanagement.repository.*;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -209,6 +210,7 @@ public class CapabilitySubscribeService {
         return null;
     }
 
+    @Transactional
     public void deleteSubsribe(Integer entityId, Integer userId, String entityType) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
 
