@@ -4,19 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmnotificationsmanagement.controller.RequestContext;
-import ru.beeline.fdmnotificationsmanagement.domain.ChangeTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityAutoSubscribe;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityChangeSub;
-import ru.beeline.fdmnotificationsmanagement.domain.EntitySubscribe;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.domain.SubscribeRule;
+import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
-import ru.beeline.fdmnotificationsmanagement.repository.EntityAutoSubscribeRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeSubRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.EntitySubscribeRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRuleRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +45,9 @@ public class CapabilitySubscribeService {
 
     @Autowired
     private EntityAutoSubscribeRepository entityAutoSubscribeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private boolean checkCapabilitySubscribeById(Integer idSubscribe, EntityTypeEnum entityTypeEnum) {
         return entitySubscribeRepository.countByUserIdAndEntityIdAndEntityType(
@@ -214,6 +207,30 @@ public class CapabilitySubscribeService {
             } else return entitySubscribe.getId();
         }
         return null;
+    }
+
+    public void deleteSubscription(Integer entityId, Integer userId, String entityType) {
+        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+
+        if (entityTypeEnum == null) {
+            return;
+        }
+
+        User user = userRepository.findByUserId(userId);
+
+        if (user == null) {
+            return;
+        }
+
+        EntitySubscribe entitySubscribe = entitySubscribeRepository.findByUserIdAndEntityIdAndEntityType(user.getId(), entityId, entityTypeEnum);
+
+        if (entitySubscribe == null) {
+            return;
+        }
+
+        entityChangeSubRepository.deleteByIdSub(entitySubscribe.getId());
+        entitySubscribeRepository.deleteById(entitySubscribe.getId());
+
     }
 
 }

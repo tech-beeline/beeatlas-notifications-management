@@ -70,4 +70,12 @@ public class CapabilitySubscribeController {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
         return ResponseEntity.status(HttpStatus.OK).body(new SubscriptionDTO(businessInteractionService.findOrCreateSubscription(EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_WITH_CHILDREN, entityId, userId)));
     }
+
+    @DeleteMapping("/subscribe/{entityType}/{id}")
+    @ApiOperation(value = "Удаление подписки")
+    public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer id, HttpServletRequest request) {
+        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }
