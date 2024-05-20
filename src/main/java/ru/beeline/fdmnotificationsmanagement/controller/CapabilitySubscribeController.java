@@ -10,6 +10,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilitySubscribeDto;
 import ru.beeline.fdmnotificationsmanagement.dto.SubscriptionDTO;
 import ru.beeline.fdmnotificationsmanagement.service.CapabilitySubscribeService;
+import ru.beeline.fdmnotificationsmanagement.service.EntityTypeEnumService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -24,6 +25,9 @@ public class CapabilitySubscribeController {
 
     @Autowired
     private CapabilitySubscribeService businessInteractionService;
+
+    @Autowired
+    private CapabilitySubscribeService capabilityInteractionService;
 
     @GetMapping("/all-entity-subscribe/{userId}")
     @ApiOperation(value = "Получить все подписки пользователя", response = List.class)
@@ -75,7 +79,7 @@ public class CapabilitySubscribeController {
     @ApiOperation(value = "Удаление подписки")
     public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer id, HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-
+        capabilityInteractionService.deleteSubsribe(id, userId, entityType);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

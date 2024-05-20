@@ -209,7 +209,7 @@ public class CapabilitySubscribeService {
         return null;
     }
 
-    public void deleteSubscription(Integer entityId, Integer userId, String entityType) {
+    public void deleteSubsribe(Integer entityId, Integer userId, String entityType) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
 
         if (entityTypeEnum == null) {
