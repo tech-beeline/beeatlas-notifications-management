@@ -16,4 +16,6 @@ public interface EntitySubscribeRepository extends JpaRepository<EntitySubscribe
     EntitySubscribe findByUserIdAndEntityIdAndEntityType(Integer userId, Integer entityId, EntityTypeEnum entityType);
 
     List<EntitySubscribe> findAllByUserIdAndEntityType(Integer userId, EntityTypeEnum entityType);
+
+    void deleteById (Integer entityId);
 }

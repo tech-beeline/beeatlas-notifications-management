@@ -7,4 +7,5 @@ import ru.beeline.fdmnotificationsmanagement.domain.EntityChangeSub;
 
 @Repository
 public interface EntityChangeSubRepository extends JpaRepository<EntityChangeSub, Long> {
+    void deleteByIdSub(Integer idSub);
 }
