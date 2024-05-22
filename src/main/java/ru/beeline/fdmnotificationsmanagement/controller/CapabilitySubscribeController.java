@@ -80,10 +80,6 @@ public class CapabilitySubscribeController {
     public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer id, HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
 
-        if (entityType == null || id == null || entityType.isEmpty() || id.describeConstable().isEmpty() || userId.describeConstable().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-
         capabilityInteractionService.deleteSubsribe(id, userId, entityType);
         return ResponseEntity.status(HttpStatus.OK).build();
     }

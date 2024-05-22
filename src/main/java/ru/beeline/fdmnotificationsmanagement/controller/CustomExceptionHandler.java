@@ -29,4 +29,9 @@ public class CustomExceptionHandler {
                 .header("content-type", MediaType.APPLICATION_JSON_VALUE)
                 .body(e.getMessage());
     }
+
+    @ExceptionHandler(NumberFormatException.class)
+    public ResponseEntity<Object> handleException(NumberFormatException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
 }
