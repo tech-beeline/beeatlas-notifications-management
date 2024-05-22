@@ -79,6 +79,7 @@ public class CapabilitySubscribeController {
     @ApiOperation(value = "Удаление подписки")
     public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer id, HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
+
         capabilityInteractionService.deleteSubsribe(id, userId, entityType);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
