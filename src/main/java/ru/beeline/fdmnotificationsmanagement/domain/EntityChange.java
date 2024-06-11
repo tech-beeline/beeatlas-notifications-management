@@ -1,10 +1,12 @@
 package ru.beeline.fdmnotificationsmanagement.domain;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,8 +14,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @Entity
@@ -28,21 +33,17 @@ public class EntityChange {
     @SequenceGenerator(name = "entity_change_id_generator", sequenceName = "entity_change_id_seq", allocationSize = 1)
     private Integer id;
 
-    @Column(name = "entity_id")
-    private Integer entityId;
-
-    @Column(name = "link")
-    private String link;
-
     @ManyToOne
-    @JoinColumn(name = "change_type_id", referencedColumnName = "id")
-    private ChangeTypeEnum changeType;
+    @JoinColumn(name = "entity_id", referencedColumnName = "id")
+    private ru.beeline.fdmnotificationsmanagement.domain.Entity entity;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id", referencedColumnName = "id")
-    private StatusEnum status;
+    @Column(name = "change_type")
+    private String changeType;
 
-    @ManyToOne
-    @JoinColumn(name = "entity_type_id", referencedColumnName = "id")
-    private EntityTypeEnum entityType;
+    @Column(name = "date_change")
+    private Timestamp dateChange;
+
+    @ApiModelProperty(hidden = true)
+    @OneToMany(mappedBy = "entityChange", cascade = CascadeType.ALL)
+    private List<Notify> notifies;
 }

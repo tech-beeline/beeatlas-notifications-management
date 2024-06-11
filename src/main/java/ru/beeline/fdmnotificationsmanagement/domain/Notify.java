@@ -1,5 +1,6 @@
 package ru.beeline.fdmnotificationsmanagement.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,31 +8,40 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "entity_change_sub", schema = "notification")
+@Table(name = "notify", schema = "notification")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class EntityChangeSub {
+public class Notify {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_change_sub_id_generator")
-    @SequenceGenerator(name = "entity_change_sub_id_generator", sequenceName = "entity_change_sub_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "id_sub")
-    private Integer idSub;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "id_entity_change", referencedColumnName = "id")
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "change_id")
     private EntityChange entityChange;
+
+    @Column(name = "web_notify")
+    private Boolean webNotify;
+
+    @Column(name = "email_notify")
+    private Boolean emailNotify;
 }
