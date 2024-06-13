@@ -2,6 +2,8 @@ package ru.beeline.fdmnotificationsmanagement.domain;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,7 +18,7 @@ import java.util.List;
 
 @Data
 @javax.persistence.Entity
-@Table(name = "entity_auto_subscribe", schema = "notification")
+@Table(name = "entity", schema = "notification")
 public class Entity {
 
     @Id
@@ -39,6 +41,7 @@ public class Entity {
     private List<EntityChange> entityChange;
 
     @ApiModelProperty(hidden = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "entity", cascade = CascadeType.ALL)
     private List<Subscribe> subscribes;
 

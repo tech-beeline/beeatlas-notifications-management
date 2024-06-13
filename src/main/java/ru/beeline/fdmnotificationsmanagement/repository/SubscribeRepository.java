@@ -6,14 +6,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
 
-import java.util.List;
-
 @Repository
-public interface SubscribeRuleRepository extends JpaRepository<Subscribe, Long> {
+public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
     @Query(value = "SELECT COUNT(*) FROM notification.subscribe_rule " +
-            "JOIN notification.entity_auto_subscribe ON notification.subscribe_rule.auto_sub_id = notification.entity_auto_subscribe.id " +
-            "JOIN notification.\"user\" ON notification.\"user\".id = notification.entity_auto_subscribe.user_id " +
-            "JOIN notification.entity_type_enum ON notification.entity_type_enum.id = notification.entity_auto_subscribe.entity_type_id " +
+            "JOIN notification.entity ON notification.subscribe_rule.auto_sub_id = notification.entity.id " +
+            "JOIN notification.\"user\" ON notification.\"user\".id = notification.entity.user_id " +
+            "JOIN notification.entity_type_enum ON notification.entity_type_enum.id = notification.entity.entity_type_id " +
             "WHERE notification.subscribe_rule.parameter_name = :parameterName " +
             "AND notification.subscribe_rule.parameter_value = :parameterValue " +
             "AND notification.\"user\".user_id = :userId " +

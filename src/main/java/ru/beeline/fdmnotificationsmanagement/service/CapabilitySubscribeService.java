@@ -4,9 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmnotificationsmanagement.controller.RequestContext;
-import ru.beeline.fdmnotificationsmanagement.domain.*;
+import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
+import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
+import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
-import ru.beeline.fdmnotificationsmanagement.repository.*;
+import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.EntityRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.UserRepository;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -25,16 +31,16 @@ public class CapabilitySubscribeService {
     private EntityChangeRepository entityChangeRepository;
 
     @Autowired
-    private ChangeTypeEnumService changeTypeEnumService;
+    private NotifyRepository notifyRepository;
 
-    @Autowired
-    private StatusEnumService statusEnumService;
+//    @Autowired
+//    private StatusEnumService statusEnumService;
 
     @Autowired
     private CapabilityIntegrationService capabilityIntegrationService;
 
     @Autowired
-    private SubscribeRuleRepository subscribeRuleRepository;
+    private SubscribeRepository subscribeRepository;
 
     @Autowired
     private EntityRepository entityRepository;
@@ -59,7 +65,7 @@ public class CapabilitySubscribeService {
     }
 
     public Boolean checkBusinessCapabilityChildrenSubscribeById(String idSubscribe) {
-        return subscribeRuleRepository.countByParameterNameAndParameterValueAndUserIdAndEntityTypeName(
+        return subscribeRepository.countByParameterNameAndParameterValueAndUserIdAndEntityTypeName(
                 PARENT_ID,
                 idSubscribe,
                 RequestContext.getUser(),
@@ -117,7 +123,7 @@ public class CapabilitySubscribeService {
 //                .collect(Collectors.toList());
 
         EntityTypeEnum entityType;
-        if(capabilityTypeName.equals("BUSINESS_CAPABILITY")){
+        if (capabilityTypeName.equals("BUSINESS_CAPABILITY")) {
             entityType = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
         } else {
             entityType = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
@@ -168,7 +174,7 @@ public class CapabilitySubscribeService {
 //        } catch (Exception e) {
 //            return new ArrayList<>();
 //        }
-    return null;
+        return null;
     }
 
     public Integer findOrCreateSubscription(EntityTypeEnum.CapabilitySubscriptionType capabilityType, Integer entityId, Integer userId) {
@@ -206,28 +212,31 @@ public class CapabilitySubscribeService {
     }
 
     @Transactional
-    public void deleteSubsribe(Integer entityId, Integer userId, String entityType) {
-//        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
-//
-//        if (entityTypeEnum == null) {
-//            return;
-//        }
-//
-//        User user = userRepository.findByUserId(userId);
-//
-//        if (user == null) {
-//            return;
-//        }
-//
-//        EntitySubscribe entitySubscribe = entitySubscribeRepository.findByUserIdAndEntityIdAndEntityType(user.getId(), entityId, entityTypeEnum);
-//
-//        if (entitySubscribe == null) {
-//            return;
-//        }
-//
-//        entityChangeSubRepository.deleteByIdSub(entitySubscribe.getId());
-//        entitySubscribeRepository.deleteById(entitySubscribe.getId());
+    public void deleteSubscribe(Integer entityId, Integer userId, String entityType) {
 
+        User user = userRepository.findByUserId(userId);
+
+        if (user == null) {
+            return;
+        }
+
+        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+
+        if (entityTypeEnum == null) {
+            return;
+        }
+        entityRepository.deleteAll(entityRepository.deleteByIdAndEntityType(entityId, entityTypeEnum));
+
+
+        List<EntityChange> entityChanges = entityChangeRepository.findAllByEntityId(entityId);
+        if (entityChanges.isEmpty()) {
+            return;
+        }
+
+        notifyRepository.deleteAllByUserAndEntityChangeInAndWebNotifyOrEmailNotify(user,
+                entityChanges,
+                false,
+                false);
     }
 
 }

@@ -9,6 +9,5 @@ import java.util.List;
 
 @Repository
 public interface EntityRepository extends JpaRepository<Entity, Integer> {
-//    List<Entity> findAllByIdIn(List<Integer> ids);
-//    Entity findByUserIdAndEntityType(Integer userId, EntityTypeEnum entityType);
+    List<Entity> deleteByIdAndEntityType(Integer id, EntityTypeEnum entityType);
 }

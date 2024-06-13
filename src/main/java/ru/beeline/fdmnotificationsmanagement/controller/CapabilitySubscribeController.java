@@ -10,7 +10,6 @@ import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilitySubscribeDto;
 import ru.beeline.fdmnotificationsmanagement.dto.SubscriptionDTO;
 import ru.beeline.fdmnotificationsmanagement.service.CapabilitySubscribeService;
-import ru.beeline.fdmnotificationsmanagement.service.EntityTypeEnumService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -80,7 +79,7 @@ public class CapabilitySubscribeController {
     public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer id, HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
 
-        capabilityInteractionService.deleteSubsribe(id, userId, entityType);
+        capabilityInteractionService.deleteSubscribe(id, userId, entityType);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
