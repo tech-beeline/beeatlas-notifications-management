@@ -15,6 +15,7 @@ import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.UserRepository;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -65,11 +66,12 @@ public class CapabilitySubscribeService {
     }
 
     public Boolean checkBusinessCapabilityChildrenSubscribeById(String idSubscribe) {
-        return subscribeRepository.countByParameterNameAndParameterValueAndUserIdAndEntityTypeName(
-                PARENT_ID,
-                idSubscribe,
-                RequestContext.getUser(),
-                "BUSINESS_CAPABILITY") > 0;
+        return false;
+//        return subscribeRepository.countByParameterNameAndParameterValueAndUserIdAndEntityTypeName(
+//                PARENT_ID,
+//                idSubscribe,
+//                RequestContext.getUser(),
+//                "BUSINESS_CAPABILITY") > 0;
     }
 
 
@@ -167,14 +169,12 @@ public class CapabilitySubscribeService {
 //                ));
 //    }
 
-    public List<Integer> getAllEntitySubscribeByUserId(Integer userId, String entityType) {
-//        try {
-//            List<EntitySubscribe> entitySubscribes = entitySubscribeRepository.findAllByUserIdAndEntityType(userId, entityTypeEnumService.getEntityTypeEnumByTypeName(entityType));
-//            return entitySubscribes.stream().map(EntitySubscribe::getEntityId).collect(Collectors.toList());
-//        } catch (Exception e) {
-//            return new ArrayList<>();
-//        }
-        return null;
+    public List<Integer> getAllEntitySubscribeByUserIdAndEntityType(Integer userId, String entityType) {
+        User user = userRepository.findByUserId(userId);
+        if(user == null) {
+            return new ArrayList<>();
+        }
+        return subscribeRepository.getByUserIdAndEntityTypeName(userId, entityType);
     }
 
     public Integer findOrCreateSubscription(EntityTypeEnum.CapabilitySubscriptionType capabilityType, Integer entityId, Integer userId) {
@@ -238,5 +238,4 @@ public class CapabilitySubscribeService {
                 false,
                 false);
     }
-
 }

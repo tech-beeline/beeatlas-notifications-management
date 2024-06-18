@@ -5,7 +5,14 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilitySubscribeDto;
 import ru.beeline.fdmnotificationsmanagement.dto.SubscriptionDTO;
@@ -28,11 +35,13 @@ public class CapabilitySubscribeController {
     @Autowired
     private CapabilitySubscribeService capabilityInteractionService;
 
-    @GetMapping("/all-entity-subscribe/{userId}")
-    @ApiOperation(value = "Получить все подписки пользователя", response = List.class)
-    public ResponseEntity<List<Integer>> getAllEntitySubscribeByUserId(@RequestParam(value = "entity-type") String entityType ,
-                                                                                   @PathVariable(value = "userId") Integer userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(businessInteractionService.getAllEntitySubscribeByUserId(userId, entityType));
+    @GetMapping("/subscribe/{entityType}")
+    @ApiOperation(value = "Получение подписок по типу сущности")
+    public ResponseEntity<List<Integer>> getSubscribesByEntityType(@PathVariable(value = "entityType") String entityType,
+                                                                   HttpServletRequest request) {
+        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
+
+        return ResponseEntity.status(HttpStatus.OK).body(capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType));
     }
 
     @GetMapping("/tech-capability-subscribe/{id}")
