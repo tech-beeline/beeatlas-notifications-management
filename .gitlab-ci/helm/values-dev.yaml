@@ -12,6 +12,7 @@ env:
   SPRING_RABBITMQ_VIRTUAL_HOST: "vault:eafdmmart/data/dev/fdm#rabbitmqvirtualhost"
   INTEGRATION_GATEWAY_SERVER_URL: "vault:eafdmmart/data/dev/fdm#gatewayserverurl"
   INTEGRATION_CAPABILITY_SERVER_URL: "vault:eafdmmart/data/dev/fdm#capabilityserver"
+  INTEGRATION_FRONTEND_SERVER_URL: "vault:eafdmmart/data/dev/fdm#frontendserver"
 
 ingress:
   annotations:

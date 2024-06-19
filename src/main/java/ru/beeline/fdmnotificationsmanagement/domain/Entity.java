@@ -1,6 +1,7 @@
 package ru.beeline.fdmnotificationsmanagement.domain;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -19,6 +20,7 @@ import java.util.List;
 @Data
 @javax.persistence.Entity
 @Table(name = "entity", schema = "notification")
+@Builder
 public class Entity {
 
     @Id

@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import ru.beeline.fdmnotificationsmanagement.domain.Entity;
 import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
 
 import java.util.List;
@@ -31,4 +32,7 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
     List<Integer> getByUserIdAndEntityTypeName(@Param("userId") Integer userId,
                                                  @Param("entityTypeName") String entityTypeName);
 
+    List<Subscribe> findAllByEntityIn(List<Entity> entities);
+
+    List<Subscribe> findByAutoSubChildrenTrue();
 }

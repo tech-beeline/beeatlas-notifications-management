@@ -2,6 +2,7 @@ package ru.beeline.fdmnotificationsmanagement.domain;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,6 +17,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "\"user\"", schema = "notification")
+@EqualsAndHashCode
 public class User {
 
     @Id
