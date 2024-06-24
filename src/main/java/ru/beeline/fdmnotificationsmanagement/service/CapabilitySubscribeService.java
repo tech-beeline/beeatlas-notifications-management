@@ -217,10 +217,18 @@ public class CapabilitySubscribeService {
 
     public List<Integer> getAllEntitySubscribeByUserIdAndEntityType(Integer userId, String entityType) {
         User user = userRepository.findByUserId(userId);
-        if (user == null) {
-            return new ArrayList<>();
+        if (user != null) {
+            List<Subscribe> subscribes = subscribeRepository.findAllByUser(user);
+            if (!subscribes.isEmpty()) {
+                EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+                return subscribes.stream()
+                        .map(Subscribe::getEntity)
+                        .filter(entity -> entityTypeEnum == entity.getEntityType())
+                        .map(Entity::getEntityId)
+                        .collect(Collectors.toList());
+            }
         }
-        return subscribeRepository.getByUserIdAndEntityTypeName(userId, entityType);
+        return new ArrayList<>();
     }
 
     public Integer findOrCreateSubscription(EntityTypeEnum.CapabilitySubscriptionType capabilityType, Integer entityId, Integer userId) {

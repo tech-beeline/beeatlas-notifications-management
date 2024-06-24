@@ -1,11 +1,10 @@
 package ru.beeline.fdmnotificationsmanagement.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.beeline.fdmnotificationsmanagement.domain.Entity;
 import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
+import ru.beeline.fdmnotificationsmanagement.domain.User;
 
 import java.util.List;
 
@@ -24,15 +23,9 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
 //                                                                         @Param("userId") Integer userId,
 //                                                                         @Param("entityTypeName") String entityTypeName);
 
-    @Query(value = "SELECT notification.subscribe.entity_id FROM notification.subscribe " +
-            "JOIN notification.entity ON notification.subscribe.entity_id = notification.entity.id " +
-            "JOIN notification.entity_type_enum ON notification.entity_type_enum.id = notification.entity.entity_type_id " +
-            "WHERE notification.subscribe.user_id = :userId " +
-            "AND notification.entity_type_enum.type = :entityTypeName ", nativeQuery = true)
-    List<Integer> getByUserIdAndEntityTypeName(@Param("userId") Integer userId,
-                                                 @Param("entityTypeName") String entityTypeName);
-
     List<Subscribe> findAllByEntityIn(List<Entity> entities);
+
+    List<Subscribe> findAllByUser(User user);
 
     List<Subscribe> findByAutoSubChildrenTrue();
 }
