@@ -10,8 +10,9 @@ import java.util.Collection;
 
 @Repository
 public interface NotifyRepository extends JpaRepository<Notify, Integer> {
-    void deleteAllByUserAndEntityChangeInAndWebNotifyOrEmailNotify(User user,
-                                                                   Collection<EntityChange> entityChange,
+    void deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(User user,
                                                                    Boolean webNotify,
-                                                                   Boolean emailNotify);
+                                                                   Boolean emailNotify,
+                                                                   Collection<EntityChange> entityChange
+    );
 }

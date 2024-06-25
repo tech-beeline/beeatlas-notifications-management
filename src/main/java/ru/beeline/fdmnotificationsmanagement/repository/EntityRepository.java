@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface EntityRepository extends JpaRepository<Entity, Integer> {
-    List<Entity> deleteByIdAndEntityType(Integer id, EntityTypeEnum entityType);
+    Entity findByIdAndEntityType(Integer id, EntityTypeEnum entityType);
 
     List<Entity> findAllByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType);
 }

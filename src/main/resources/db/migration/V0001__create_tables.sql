@@ -145,8 +145,8 @@ ALTER TABLE entity ADD CONSTRAINT fk_entity_entity_type_enum
     FOREIGN KEY (entity_type_id) REFERENCES entity_type_enum (id) ON DELETE No Action ON UPDATE No Action
 ;
 
-ALTER TABLE entity ADD CONSTRAINT fk_entity_subscribe
-    FOREIGN KEY (entity_id) REFERENCES subscribe (id) ON DELETE No Action ON UPDATE No Action
+ALTER TABLE subscribe ADD CONSTRAINT fk_subscribe_entity
+    FOREIGN KEY (entity_id) REFERENCES entity (id) ON DELETE No Action ON UPDATE No Action
 ;
 
 ALTER TABLE entity_change ADD CONSTRAINT fk_entity_change_entity

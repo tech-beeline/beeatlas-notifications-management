@@ -265,31 +265,24 @@ public class CapabilitySubscribeService {
         return null;
     }
 
-    @Transactional
     public void deleteSubscribe(Integer entityId, Integer userId, String entityType) {
-
         User user = userRepository.findByUserId(userId);
-
-        if (user == null) {
-            return;
+        if (user != null) {
+            EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+            if (entityTypeEnum != null) {
+                Entity entity = entityRepository.findByIdAndEntityType(entityId, entityTypeEnum);
+                if (entity != null) {
+                    subscribeRepository.deleteByUserAndEntity(user, entity);
+                    List<EntityChange> entityChanges = entityChangeRepository.findAllByEntityId(entityId);
+                    if (!entityChanges.isEmpty()) {
+                        notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
+                                user,
+                                false,
+                                false,
+                                entityChanges);
+                    }
+                }
+            }
         }
-
-        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
-
-        if (entityTypeEnum == null) {
-            return;
-        }
-        entityRepository.deleteAll(entityRepository.deleteByIdAndEntityType(entityId, entityTypeEnum));
-
-
-        List<EntityChange> entityChanges = entityChangeRepository.findAllByEntityId(entityId);
-        if (entityChanges.isEmpty()) {
-            return;
-        }
-
-        notifyRepository.deleteAllByUserAndEntityChangeInAndWebNotifyOrEmailNotify(user,
-                entityChanges,
-                false,
-                false);
     }
 }

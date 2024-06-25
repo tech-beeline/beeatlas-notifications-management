@@ -1,8 +1,10 @@
 package ru.beeline.fdmnotificationsmanagement.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -31,11 +33,14 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @ToString.Exclude
     @ApiModelProperty(hidden = true)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Notify> notifies;
 
+    @ToString.Exclude
     @ApiModelProperty(hidden = true)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Subscribe> subscribes;
 }

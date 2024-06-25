@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -33,6 +34,7 @@ public class EntityChange {
     @SequenceGenerator(name = "entity_change_id_generator", sequenceName = "entity_change_id_seq", allocationSize = 1)
     private Integer id;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "entity_id", referencedColumnName = "id")
     private ru.beeline.fdmnotificationsmanagement.domain.Entity entity;
@@ -43,6 +45,7 @@ public class EntityChange {
     @Column(name = "date_change")
     private Timestamp dateChange;
 
+    @ToString.Exclude
     @ApiModelProperty(hidden = true)
     @OneToMany(mappedBy = "entityChange", cascade = CascadeType.ALL)
     private List<Notify> notifies;

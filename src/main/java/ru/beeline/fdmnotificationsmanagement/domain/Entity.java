@@ -1,10 +1,12 @@
 package ru.beeline.fdmnotificationsmanagement.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -42,10 +44,12 @@ public class Entity {
     @JoinColumn(name = "entity_type_id", referencedColumnName = "id")
     private EntityTypeEnum entityType;
 
+    @JsonIgnore
     @ApiModelProperty(hidden = true)
     @OneToMany(mappedBy = "entity", cascade = CascadeType.ALL)
     private List<EntityChange> entityChange;
 
+    @ToString.Exclude
     @ApiModelProperty(hidden = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "entity", cascade = CascadeType.ALL)
