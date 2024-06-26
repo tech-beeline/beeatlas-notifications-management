@@ -37,6 +37,9 @@ public class Entity {
     @Column(name = "entity_id")
     private Integer entityId;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "link")
     private String link;
 

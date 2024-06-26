@@ -46,6 +46,7 @@ DROP TABLE IF EXISTS "user" CASCADE
 CREATE TABLE entity
 (
     id integer NOT NULL   DEFAULT NEXTVAL(('seq_entity_id'::text)::regclass),
+    name VARCHAR(255) NULL,
     entity_id integer NULL,
     entity_type_id integer NULL,
     link varchar(100) NULL
