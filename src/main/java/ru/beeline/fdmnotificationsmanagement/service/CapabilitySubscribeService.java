@@ -52,9 +52,9 @@ public class CapabilitySubscribeService {
     @Autowired
     private UserRepository userRepository;
 
-    public void updateSubscribeBusinessCapability(Integer entityId) {
+    public void updateSubscribeBusinessCapability(Integer entityId, String name) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum, null);
+        updateSubscribe(entityId, entityTypeEnum, name);
     }
 
     public void updateSubscribeTechCapability(Integer entityId, String entityName) {
@@ -69,17 +69,16 @@ public class CapabilitySubscribeService {
             createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, entityName);
     }
 
-    public void createSubscribeBusinessCapability(Integer entityId) {
+    public void createSubscribeBusinessCapability(Integer entityId, String name) {
         CapabilityParentDTO capabilityParentDTO = capabilityIntegrationService.getBusinessCapabilityParents(entityId);
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, null);
+        createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, name);
     }
 
     private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName) {
         Entity entity = entityRepository.findByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (entity != null) {
-            if (entityName != null
-                    && EntityTypeEnum.CapabilitySubscriptionType.TECH.equals(entityTypeEnum.getType())
+            if (EntityTypeEnum.CapabilitySubscriptionType.TECH.equals(entityTypeEnum.getType())
                     && !entityName.equals(entity.getName())) {
                 entity.setName(entityName);
                 entityRepository.save(entity);

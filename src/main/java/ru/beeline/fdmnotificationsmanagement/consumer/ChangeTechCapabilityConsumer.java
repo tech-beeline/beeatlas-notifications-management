@@ -51,14 +51,15 @@ public class ChangeTechCapabilityConsumer {
             JsonNode jsonNode = objectMapper.readTree(message);
             if (jsonNode.has("entity_id") && jsonNode.has("change_type")) {
                 String changeType = jsonNode.get("change_type").asText();
+                String name = jsonNode.get("name").asText();
                 Integer entityId = jsonNode.get("entity_id").asInt();
 
                 switch (changeType) {
                     case "UPDATE":
-                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId);
+                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name);
                         break;
                     case "CREATE":
-                        capabilitySubscribeService.createSubscribeBusinessCapability(entityId);
+                        capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name);
                         break;
                 }
             } else {
