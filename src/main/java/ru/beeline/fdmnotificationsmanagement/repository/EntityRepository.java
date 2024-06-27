@@ -11,5 +11,5 @@ import java.util.List;
 public interface EntityRepository extends JpaRepository<Entity, Integer> {
     Entity findByIdAndEntityType(Integer id, EntityTypeEnum entityType);
 
-    List<Entity> findAllByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType);
+    Entity findByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType);
 }

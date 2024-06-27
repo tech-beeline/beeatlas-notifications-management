@@ -4,6 +4,8 @@ import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,13 +21,15 @@ public class EntityTypeEnum {
     @Column(name = "id")
     private Integer id;
 
+    @Enumerated(value = EnumType.STRING)
     @Column(name = "type")
-    private String type;
+    private CapabilitySubscriptionType type;
 
 
     public enum CapabilitySubscriptionType {
         TECH,
+        TECH_CAPABILITY,
         BUSINESS,
-        BUSINESS_WITH_CHILDREN
+        BUSINESS_CAPABILITY,
     }
 }

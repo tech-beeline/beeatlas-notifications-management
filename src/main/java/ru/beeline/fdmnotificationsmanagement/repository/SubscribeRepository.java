@@ -10,20 +10,7 @@ import java.util.List;
 
 @Repository
 public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
-//    @Query(value = "SELECT COUNT(*) FROM notification.subscribe_rule " +
-//            "JOIN notification.entity ON notification.subscribe_rule.auto_sub_id = notification.entity.id " +
-//            "JOIN notification.\"user\" ON notification.\"user\".id = notification.entity.user_id " +
-//            "JOIN notification.entity_type_enum ON notification.entity_type_enum.id = notification.entity.entity_type_id " +
-//            "WHERE notification.subscribe_rule.parameter_name = :parameterName " +
-//            "AND notification.subscribe_rule.parameter_value = :parameterValue " +
-//            "AND notification.\"user\".user_id = :userId " +
-//            "AND notification.entity_type_enum.type = :entityTypeName ", nativeQuery = true)
-//    Long countByParameterNameAndParameterValueAndUserIdAndEntityTypeName(@Param("parameterName") String parameterName,
-//                                                                         @Param("parameterValue") String parameterValue,
-//                                                                         @Param("userId") Integer userId,
-//                                                                         @Param("entityTypeName") String entityTypeName);
-
-    List<Subscribe> findAllByEntityIn(List<Entity> entities);
+    List<Subscribe> findAllByEntity(Entity entity);
 
     List<Subscribe> findAllByUser(User user);
 
