@@ -12,4 +12,6 @@ public interface EntityRepository extends JpaRepository<Entity, Integer> {
     Entity findByIdAndEntityType(Integer id, EntityTypeEnum entityType);
 
     Entity findByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType);
+
+    List<Entity> findAllByEntityIdInAndEntityType(List<Integer> entityId, EntityTypeEnum entityType);
 }

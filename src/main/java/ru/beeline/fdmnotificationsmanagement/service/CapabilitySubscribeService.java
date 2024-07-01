@@ -3,6 +3,10 @@ package ru.beeline.fdmnotificationsmanagement.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenDTO;
+import ru.beeline.fdmlib.dto.capability.BusinessCapabilityDTO;
+import ru.beeline.fdmlib.dto.capability.TechCapabilityShortDTO;
+import ru.beeline.fdmnotificationsmanagement.client.CapabilityClient;
 import ru.beeline.fdmnotificationsmanagement.domain.Entity;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
@@ -41,7 +45,7 @@ public class CapabilitySubscribeService {
     private NotifyRepository notifyRepository;
 
     @Autowired
-    private CapabilityIntegrationService capabilityIntegrationService;
+    private CapabilityClient capabilityClient;
 
     @Autowired
     private SubscribeRepository subscribeRepository;
@@ -63,14 +67,14 @@ public class CapabilitySubscribeService {
     }
 
     public void createSubscribeTechCapability(Integer entityId, String entityName) {
-        CapabilityParentDTO capabilityParentDTO = capabilityIntegrationService.getTechCapabilityParents(entityId);
+        CapabilityParentDTO capabilityParentDTO = capabilityClient.getTechCapabilityParents(entityId);
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
         if (capabilityParentDTO != null)
             createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, entityName);
     }
 
     public void createSubscribeBusinessCapability(Integer entityId, String name) {
-        CapabilityParentDTO capabilityParentDTO = capabilityIntegrationService.getBusinessCapabilityParents(entityId);
+        CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
         createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, name);
     }
@@ -176,19 +180,47 @@ public class CapabilitySubscribeService {
         if (user != null) {
             EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
             if (entityTypeEnum != null) {
+                businessCapabilityProcess(entityId, user);
                 Entity entity = entityRepository.findByIdAndEntityType(entityId, entityTypeEnum);
-                if (entity != null) {
-                    subscribeRepository.deleteByUserAndEntity(user, entity);
-                    List<EntityChange> entityChanges = entityChangeRepository.findAllByEntityId(entityId);
-                    if (!entityChanges.isEmpty()) {
-                        notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
-                                user,
-                                false,
-                                false,
-                                entityChanges);
-                    }
-                }
+                dropSubscribe(entityId, entity, user);
             }
         }
+    }
+
+    private void dropSubscribe(Integer entityId, Entity entity, User user) {
+        if (entity != null) {
+            subscribeRepository.deleteByUserAndEntity(user, entity);
+            List<EntityChange> entityChanges = entityChangeRepository.findAllByEntityId(entityId);
+            if (!entityChanges.isEmpty()) {
+                notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
+                        user,
+                        false,
+                        false,
+                        entityChanges);
+            }
+        }
+    }
+
+    private void businessCapabilityProcess(Integer entityId, User user) {
+        BusinessCapabilityChildrenDTO businessCapabilityChildrenDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
+
+        List<Integer> techCapabilityIds = businessCapabilityChildrenDTO.getTechCapabilities().stream()
+                .map(TechCapabilityShortDTO::getId)
+                .map(Math::toIntExact)
+                .collect(Collectors.toList());
+        EntityTypeEnum techCapabilityEntityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
+        List<Entity> entities = entityRepository.findAllByEntityIdInAndEntityType(
+                techCapabilityIds, techCapabilityEntityTypeEnum);
+
+
+        List<Integer> businessCapabilityIds = businessCapabilityChildrenDTO.getBusinessCapabilities().stream()
+                .map(BusinessCapabilityDTO::getId)
+                .map(Math::toIntExact)
+                .collect(Collectors.toList());
+        EntityTypeEnum businessCapabilityEntityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+        entities.addAll(entityRepository.findAllByEntityIdInAndEntityType(
+                businessCapabilityIds, businessCapabilityEntityTypeEnum));
+
+        entities.forEach(entity -> dropSubscribe(entity.getEntityId(), entity, user));
     }
 }
