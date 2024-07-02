@@ -2,8 +2,11 @@ package ru.beeline.fdmnotificationsmanagement.domain;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.CascadeType;
@@ -20,6 +23,9 @@ import java.util.List;
 @Entity
 @Table(name = "\"user\"", schema = "notification")
 @EqualsAndHashCode
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id

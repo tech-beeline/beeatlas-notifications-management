@@ -9,13 +9,10 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.dto.CapabilitySubscribeDto;
-import ru.beeline.fdmnotificationsmanagement.dto.SubscriptionDTO;
 import ru.beeline.fdmnotificationsmanagement.service.CapabilitySubscribeService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +36,17 @@ public class CapabilitySubscribeController {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
 
         return ResponseEntity.status(HttpStatus.OK).body(capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType));
+    }
+
+    @PostMapping("/subscribe/{entityType}/{id}")
+    @ApiOperation(value = "Добавление подписки")
+    public ResponseEntity addSubscribe(@PathVariable(value = "entityType") String entityType,
+                                       @PathVariable(value = "id") Integer entityId, HttpServletRequest request,
+                                       @RequestParam(value = "sub_children", required = false) boolean subChildren) {
+        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
+
+        capabilityInteractionService.addSubscribe(entityId, userId, entityType, subChildren);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @DeleteMapping("/subscribe/{entityType}/{id}")

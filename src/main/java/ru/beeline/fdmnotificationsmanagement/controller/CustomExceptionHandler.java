@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.ForbiddenException;
 
 @ControllerAdvice
@@ -33,5 +34,14 @@ public class CustomExceptionHandler {
     @ExceptionHandler(NumberFormatException.class)
     public ResponseEntity<Object> handleException(NumberFormatException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleException(BadRequestException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header("content-type", MediaType.APPLICATION_JSON_VALUE)
+                .body(e.getMessage());
     }
 }
