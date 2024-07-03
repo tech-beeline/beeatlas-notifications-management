@@ -24,7 +24,9 @@ public class ChangeTechCapabilityConsumer {
         log.info("Received from change-tech-capability: " + message, new String(message.getBytes()));
         try {
             JsonNode jsonNode = objectMapper.readTree(message);
-            if (jsonNode.has("entity_id") && jsonNode.has("change_type")) {
+            if (jsonNode.has("entity_id")
+                    && jsonNode.has("change_type")
+                    && jsonNode.has("name")) {
                 String changeType = jsonNode.get("change_type").asText();
                 String name = jsonNode.get("name").asText();
                 Integer entityId = jsonNode.get("entity_id").asInt();
@@ -49,7 +51,9 @@ public class ChangeTechCapabilityConsumer {
         log.info("Received from change-business-capability: " + message, new String(message.getBytes()));
         try {
             JsonNode jsonNode = objectMapper.readTree(message);
-            if (jsonNode.has("entity_id") && jsonNode.has("change_type")) {
+            if (jsonNode.has("entity_id")
+                    && jsonNode.has("change_type")
+                    && jsonNode.has("name")) {
                 String changeType = jsonNode.get("change_type").asText();
                 String name = jsonNode.get("name").asText();
                 Integer entityId = jsonNode.get("entity_id").asInt();
