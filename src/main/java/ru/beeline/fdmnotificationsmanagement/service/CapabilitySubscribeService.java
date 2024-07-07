@@ -15,6 +15,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
 import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
+import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
 import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
@@ -269,6 +270,14 @@ public class CapabilitySubscribeService {
         }
     }
 
+    public void patchNotify(Integer userId, List<Integer> notifyIds) {
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            throw new EntityNotFoundException("Пользователь не найден");
+        }
+        notifyRepository.updateWebNotifyByUserIdAndIds(userId, notifyIds);
+    }
+
     private void findSubscribesOrCreate(Entity entity, User user, boolean autoSubChildren) {
         Subscribe subscribe = subscribeRepository.findByUserAndEntity(user, entity);
         if (subscribe == null) {
@@ -284,4 +293,5 @@ public class CapabilitySubscribeService {
         String type = entityTypeEnum.getType().name().equals("TECH_CAPABILITY") ? "TECH" : "BUSINESS";
         return frontendServerUrl + "//fdm?id=" + entityId + "&type=" + type;
     }
+
 }
