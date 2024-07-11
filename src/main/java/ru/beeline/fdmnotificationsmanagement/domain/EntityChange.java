@@ -31,7 +31,7 @@ public class EntityChange {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_change_id_generator")
-    @SequenceGenerator(name = "entity_change_id_generator", sequenceName = "entity_change_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "entity_change_id_generator", sequenceName = "seq_entity_change_id", allocationSize = 1)
     private Integer id;
 
     @ToString.Exclude

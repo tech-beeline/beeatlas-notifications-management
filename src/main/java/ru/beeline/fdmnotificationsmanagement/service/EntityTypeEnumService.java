@@ -18,19 +18,19 @@ public class EntityTypeEnumService {
 
     public EntityTypeEnum getTechCapabilityEntityTypeEnum() {
         if (Objects.isNull(techCapability)) {
-            techCapability = entityTypeEnumRepository.findByType("TECH_CAPABILITY");
+            techCapability = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.TECH_CAPABILITY);
         }
         return techCapability;
     }
 
     public EntityTypeEnum getBusinessCapabilityEntityTypeEnum() {
         if (Objects.isNull(businessCapability)) {
-            businessCapability = entityTypeEnumRepository.findByType("BUSINESS_CAPABILITY");
+            businessCapability = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.TECH_CAPABILITY);
         }
         return businessCapability;
     }
 
     public EntityTypeEnum getEntityTypeEnumByTypeName(String typeName) {
-        return entityTypeEnumRepository.findByType(typeName);
+        return entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.valueOf(typeName));
     }
 }

@@ -14,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 @Data
@@ -25,8 +26,8 @@ import javax.persistence.Table;
 public class Notify {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_change_id_generator")
+    @SequenceGenerator(name = "entity_change_id_generator", sequenceName = "seq_notify_id", allocationSize = 1)
     private Integer id;
 
     @JsonIgnore
