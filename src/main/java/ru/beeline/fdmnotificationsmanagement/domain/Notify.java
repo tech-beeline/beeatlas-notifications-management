@@ -26,8 +26,8 @@ import javax.persistence.Table;
 public class Notify {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_change_id_generator")
-    @SequenceGenerator(name = "entity_change_id_generator", sequenceName = "seq_notify_id", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notify_id_generator")
+    @SequenceGenerator(name = "notify_id_generator", sequenceName = "seq_notify_id", allocationSize = 1)
     private Integer id;
 
     @JsonIgnore
