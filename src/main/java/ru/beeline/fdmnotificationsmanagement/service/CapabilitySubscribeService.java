@@ -278,6 +278,30 @@ public class CapabilitySubscribeService {
         notifyRepository.updateWebNotifyByUserIdAndIds(userId, notifyIds);
     }
 
+    public void techQueueProcessor(int entityId, String name, String changeType) {
+        EntityTypeEnum techEntityTypeEnum = entityTypeEnumService.getTechEntityTypeEnum();
+        Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
+        if (entity != null) {
+            entity.setName(name);
+            List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
+            if (!subscribes.isEmpty()) {
+                List<EntityChange> entityChanges = subscribes.stream()
+                        .map(subscribe -> EntityChange.builder()
+                                .entity(subscribe.getEntity())
+                                .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                                .changeType(changeType)
+                                .notifies(List.of(Notify.builder()
+                                        .user(subscribe.getUser())
+                                        .webNotify(false)
+                                        .emailNotify(false)
+                                        .build()))
+                                .build())
+                        .collect(Collectors.toList());
+                entityChangeRepository.saveAll(entityChanges);
+            }
+        }
+    }
+
     private void findSubscribesOrCreate(Entity entity, User user, boolean autoSubChildren) {
         Subscribe subscribe = subscribeRepository.findByUserAndEntity(user, entity);
         if (subscribe == null) {
@@ -293,5 +317,4 @@ public class CapabilitySubscribeService {
         String type = entityTypeEnum.getType().name().equals("TECH_CAPABILITY") ? "TECH" : "BUSINESS";
         return frontendServerUrl + "//fdm?id=" + entityId + "&type=" + type;
     }
-
 }

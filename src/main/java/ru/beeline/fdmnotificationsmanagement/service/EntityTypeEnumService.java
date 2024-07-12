@@ -25,7 +25,14 @@ public class EntityTypeEnumService {
 
     public EntityTypeEnum getBusinessCapabilityEntityTypeEnum() {
         if (Objects.isNull(businessCapability)) {
-            businessCapability = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.TECH_CAPABILITY);
+            businessCapability = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_CAPABILITY);
+        }
+        return businessCapability;
+    }
+
+    public EntityTypeEnum getTechEntityTypeEnum() {
+        if (Objects.isNull(businessCapability)) {
+            businessCapability = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.TECH);
         }
         return businessCapability;
     }
