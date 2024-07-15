@@ -1,5 +1,6 @@
 package ru.beeline.fdmnotificationsmanagement.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 public class CapabilitySubscribeService {
@@ -75,6 +77,7 @@ public class CapabilitySubscribeService {
 
     public void createSubscribeBusinessCapability(Integer entityId, String name) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
+        log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
         createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, name);
     }
@@ -111,12 +114,14 @@ public class CapabilitySubscribeService {
                                  CapabilityParentDTO capabilityParentDTO,
                                  EntityTypeEnum entityTypeEnum, String entityName) {
         List<Subscribe> subscribes = subscribeRepository.findByAutoSubChildrenTrue();
+        log.info("subscribes: " + subscribes.stream().map(Subscribe::getId).collect(Collectors.toList()).toString());
         if (!subscribes.isEmpty()) {
             List<Entity> entities = subscribes.stream()
                     .map(Subscribe::getEntity)
                     .filter(entity -> entity.getEntityType().equals(entityTypeEnum))
                     .filter(entity -> capabilityParentDTO.getParents().contains(entityId.longValue()))
                     .toList();
+            log.info("subscribes: " + entities.stream().map(Entity::getId).collect(Collectors.toList()).toString());
             if (!entities.isEmpty()) {
                 Entity entity = entityService.save(Entity.builder()
                         .entityId(entityId)
