@@ -118,10 +118,10 @@ public class CapabilitySubscribeService {
         if (!subscribes.isEmpty()) {
             List<Entity> entities = subscribes.stream()
                     .map(Subscribe::getEntity)
-                    .filter(entity -> entity.getEntityType().equals(entityTypeEnum))
+                    .filter(entity -> entity.getEntityType().getType().equals(entityTypeEnum.getType()))
                     .filter(entity -> capabilityParentDTO.getParents().contains(entityId.longValue()))
                     .toList();
-            log.info("subscribes: " + entities.stream().map(Entity::getId).collect(Collectors.toList()).toString());
+            log.info("entities: " + entities.stream().map(Entity::getId).collect(Collectors.toList()).toString());
             if (!entities.isEmpty()) {
                 Entity entity = entityService.save(Entity.builder()
                         .entityId(entityId)
