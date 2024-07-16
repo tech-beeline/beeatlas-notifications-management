@@ -78,10 +78,8 @@ public class CapabilitySubscribeService {
     public void createSubscribeBusinessCapability(Integer entityId, String name) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
         log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
-        if(!capabilityParentDTO.getParents().isEmpty()) {
-            EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-            createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, name);
-        }
+        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+        createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, name);
     }
 
     private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName) {
