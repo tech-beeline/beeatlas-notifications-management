@@ -18,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import java.util.List;
 
@@ -30,8 +31,8 @@ import java.util.List;
 public class Entity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entity_id_generator")
+    @SequenceGenerator(name = "entity_id_generator", sequenceName = "seq_entity_id", allocationSize = 1)
     private Integer id;
 
     @Column(name = "entity_id")
