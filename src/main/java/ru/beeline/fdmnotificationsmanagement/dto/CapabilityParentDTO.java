@@ -14,5 +14,5 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CapabilityParentDTO {
-    private List<Long> parents;
+    private List<Integer> parents;
 }

@@ -78,8 +78,10 @@ public class CapabilitySubscribeService {
     public void createSubscribeBusinessCapability(Integer entityId, String name) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
         log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
-        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, name);
+        if(!capabilityParentDTO.getParents().isEmpty()) {
+            EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+            createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, name);
+        }
     }
 
     private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName) {
@@ -119,7 +121,7 @@ public class CapabilitySubscribeService {
             List<Entity> entities = subscribes.stream()
                     .map(Subscribe::getEntity)
                     .filter(entity -> entity.getEntityType().getType().equals(entityTypeEnum.getType()))
-                    .filter(entity -> capabilityParentDTO.getParents().contains(entityId.longValue()))
+                    .filter(entity -> capabilityParentDTO.getParents().contains(entity.getEntityId()))
                     .toList();
             log.info("entities: " + entities.stream().map(Entity::getId).collect(Collectors.toList()).toString());
             if (!entities.isEmpty()) {
