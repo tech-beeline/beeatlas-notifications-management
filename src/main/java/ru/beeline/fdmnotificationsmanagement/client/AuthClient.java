@@ -30,7 +30,7 @@ public class AuthClient {
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            emailResponseDTO = restTemplate.exchange(authServerUrl + "/api/admin/v1/profiles/" + userId + "/email",
+            emailResponseDTO = restTemplate.exchange(authServerUrl + "/api/v1/profiles/" + userId + "/email",
                     HttpMethod.GET, entity, EmailResponseDTO.class).getBody();
         } catch (Exception e) {
             log.error(e.getMessage());

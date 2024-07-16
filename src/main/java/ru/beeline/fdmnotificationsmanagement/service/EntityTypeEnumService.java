@@ -3,6 +3,7 @@ package ru.beeline.fdmnotificationsmanagement.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
+import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.repository.EntityTypeEnumRepository;
 
 import java.util.Objects;
@@ -38,6 +39,11 @@ public class EntityTypeEnumService {
     }
 
     public EntityTypeEnum getEntityTypeEnumByTypeName(String typeName) {
+        try {
+            EntityTypeEnum.CapabilitySubscriptionType.valueOf(typeName);
+        } catch (Exception e) {
+            throw new BadRequestException("Не верно указан тип сущности");
+        }
         return entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.valueOf(typeName));
     }
 }
