@@ -70,7 +70,7 @@ public class CapabilitySubscribeService {
 
     public void createSubscribeTechCapability(Integer entityId, String entityName) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getTechCapabilityParents(entityId);
-        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
         if (capabilityParentDTO != null)
             createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, entityName);
     }
@@ -85,8 +85,8 @@ public class CapabilitySubscribeService {
     private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName) {
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (entity != null) {
-            if (EntityTypeEnum.CapabilitySubscriptionType.TECH.equals(entityTypeEnum.getType())
-                    && !entityName.equals(entity.getName())) {
+            log.info("entityID: " + entity.getId());
+            if (!entityName.equals(entity.getName())) {
                 entity.setName(entityName);
                 entityService.save(entity);
             }
