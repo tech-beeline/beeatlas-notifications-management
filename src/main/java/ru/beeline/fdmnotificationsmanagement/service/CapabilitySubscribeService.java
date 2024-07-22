@@ -15,7 +15,6 @@ import ru.beeline.fdmnotificationsmanagement.domain.Notify;
 import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
 import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
-import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
 import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
@@ -70,16 +69,26 @@ public class CapabilitySubscribeService {
 
     public void createSubscribeTechCapability(Integer entityId, String entityName) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getTechCapabilityParents(entityId);
-        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
-        if (capabilityParentDTO != null)
-            createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, entityName);
+        log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
+        if (capabilityParentDTO != null) {
+            createSubscribe(entityId,
+                    capabilityParentDTO,
+                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                    entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
+                    entityName);
+        }
     }
 
-    public void createSubscribeBusinessCapability(Integer entityId, String name) {
+    public void createSubscribeBusinessCapability(Integer entityId, String entityName) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
         log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
-        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        createSubscribe(entityId, capabilityParentDTO, entityTypeEnum, name);
+        if (capabilityParentDTO != null) {
+            createSubscribe(entityId,
+                    capabilityParentDTO,
+                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                    entityName);
+        }
     }
 
     private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName) {
@@ -112,13 +121,15 @@ public class CapabilitySubscribeService {
 
     private void createSubscribe(Integer entityId,
                                  CapabilityParentDTO capabilityParentDTO,
-                                 EntityTypeEnum entityTypeEnum, String entityName) {
+                                 EntityTypeEnum entityTypeEnumForFind,
+                                 EntityTypeEnum entityTypeEnumForCreate,
+                                 String entityName) {
         List<Subscribe> subscribes = subscribeRepository.findByAutoSubChildrenTrue();
         log.info("subscribes: " + subscribes.stream().map(Subscribe::getId).collect(Collectors.toList()).toString());
         if (!subscribes.isEmpty()) {
             List<Entity> entities = subscribes.stream()
                     .map(Subscribe::getEntity)
-                    .filter(entity -> entity.getEntityType().getType().equals(entityTypeEnum.getType()))
+                    .filter(entity -> entity.getEntityType().getType().equals(entityTypeEnumForFind.getType()))
                     .filter(entity -> capabilityParentDTO.getParents().contains(entity.getEntityId()))
                     .toList();
             log.info("entities: " + entities.stream().map(Entity::getId).collect(Collectors.toList()).toString());
@@ -126,8 +137,8 @@ public class CapabilitySubscribeService {
                 Entity entity = entityService.save(Entity.builder()
                         .entityId(entityId)
                         .name(entityName)
-                        .link(generateLink(entityTypeEnum, entityId))
-                        .entityType(entityTypeEnum)
+                        .link(generateLink(entityTypeEnumForCreate, entityId))
+                        .entityType(entityTypeEnumForCreate)
                         .build());
                 entityChangeRepository.save(
                         EntityChange.builder()
@@ -316,7 +327,7 @@ public class CapabilitySubscribeService {
     }
 
     private String generateLink(EntityTypeEnum entityTypeEnum, Integer entityId) {
-        String type = entityTypeEnum.getType().name().equals("TECH_CAPABILITY") ? "TECH" : "BUSINESS";
-        return frontendServerUrl + "//fdm?id=" + entityId + "&type=" + type;
+        String type = entityTypeEnum.getType().equals(EntityTypeEnum.CapabilitySubscriptionType.TECH_CAPABILITY) ? "TECH" : "BUSINESS";
+        return frontendServerUrl + "/fdm?id=" + entityId + "&type=" + type;
     }
 }
