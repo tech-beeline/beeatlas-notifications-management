@@ -247,11 +247,11 @@ public class CapabilitySubscribeService {
                 generateLink(entityTypeEnum, entityId),
                 entityId,
                 entityTypeEnum);
-        findSubscribesOrCreate(entity, user, entityTypeEnum.getType().name().equals("BUSINESS_CAPABILITY") && subChildren);
-        if (EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_CAPABILITY.equals(entityTypeEnum.getType()) && subChildren) {
+        boolean autoSubChildren = entityType.equals("BUSINESS_CAPABILITY") && subChildren;
+        findSubscribesOrCreate(entity, user, autoSubChildren);
+        if (autoSubChildren) {
             List<Entity> resultEntityList = new ArrayList<>();
             BusinessCapabilityChildrenDTO businessCapabilityChildrenDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
-            EntityTypeEnum techCapabilityEntityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
             List<Integer> techCapabilityIds = businessCapabilityChildrenDTO.getTechCapabilities().stream()
                     .map(TechCapabilityShortDTO::getId)
                     .map(Math::toIntExact)
@@ -260,12 +260,9 @@ public class CapabilitySubscribeService {
                 final Entity techEntity = entityService.getEntityOrCreate(
                         generateLink(entityTypeEnum, entityId),
                         id,
-                        techCapabilityEntityTypeEnum);
+                        entityTypeEnumService.getTechCapabilityEntityTypeEnum());
                 resultEntityList.add(techEntity);
             });
-
-
-            EntityTypeEnum businessCapabilityEntityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
             List<Integer> businessCapabilityIds = businessCapabilityChildrenDTO.getBusinessCapabilities().stream()
                     .map(BusinessCapabilityDTO::getId)
                     .map(Math::toIntExact)
@@ -274,7 +271,7 @@ public class CapabilitySubscribeService {
                 final Entity businessEntity = entityService.getEntityOrCreate(
                         generateLink(entityTypeEnum, entityId),
                         id,
-                        businessCapabilityEntityTypeEnum);
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
                 resultEntityList.add(businessEntity);
             });
 

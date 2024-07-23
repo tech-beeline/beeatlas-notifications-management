@@ -34,7 +34,7 @@ public class AuthClient {
                     HttpMethod.GET, entity, EmailResponseDTO.class).getBody();
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new ForbiddenException(e.getMessage());
+            throw new ForbiddenException("FORBIDDEN");
         }
         return emailResponseDTO;
     }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
+import ru.beeline.fdmnotificationsmanagement.exception.ServerNotFoundException;
 
 @Slf4j
 @Service
@@ -39,8 +40,8 @@ public class CapabilityClient {
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
+            throw new ServerNotFoundException(e.getMessage());
         }
-        return null;
     }
     public CapabilityParentDTO getBusinessCapabilityParents(Integer entityId) {
         try {
@@ -57,8 +58,8 @@ public class CapabilityClient {
             return result;
         } catch (Exception e) {
             log.error(e.getMessage());
+            throw new ServerNotFoundException(e.getMessage());
         }
-        return null;
     }
 
 

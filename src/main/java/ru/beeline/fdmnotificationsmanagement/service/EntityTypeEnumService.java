@@ -11,6 +11,7 @@ import java.util.Objects;
 @Service
 public class EntityTypeEnumService {
     private static EntityTypeEnum techCapability = null;
+    private static EntityTypeEnum tech = null;
     private static EntityTypeEnum businessCapability = null;
 
     @Autowired
@@ -32,17 +33,17 @@ public class EntityTypeEnumService {
     }
 
     public EntityTypeEnum getTechEntityTypeEnum() {
-        if (Objects.isNull(businessCapability)) {
-            businessCapability = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.TECH);
+        if (Objects.isNull(tech)) {
+            tech = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.TECH);
         }
-        return businessCapability;
+        return tech;
     }
 
     public EntityTypeEnum getEntityTypeEnumByTypeName(String typeName) {
         try {
             EntityTypeEnum.CapabilitySubscriptionType.valueOf(typeName);
         } catch (Exception e) {
-            throw new BadRequestException("Не верно указан тип сущности");
+            throw new BadRequestException("Неверно указан тип сущности");
         }
         return entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.valueOf(typeName));
     }

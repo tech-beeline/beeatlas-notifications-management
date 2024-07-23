@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
 import ru.beeline.fdmnotificationsmanagement.exception.ForbiddenException;
+import ru.beeline.fdmnotificationsmanagement.exception.ServerNotFoundException;
 
 @ControllerAdvice
 @Slf4j
@@ -48,6 +49,14 @@ public class CustomExceptionHandler {
     public ResponseEntity<Object> handleException(EntityNotFoundException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .header("content-type", MediaType.APPLICATION_JSON_VALUE)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(ServerNotFoundException.class)
+    public ResponseEntity<Object> handleException(ServerNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .header("content-type", MediaType.APPLICATION_JSON_VALUE)
                 .body(e.getMessage());
     }
