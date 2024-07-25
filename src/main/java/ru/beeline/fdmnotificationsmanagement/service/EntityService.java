@@ -19,9 +19,6 @@ public class EntityService {
         return entityRepository.save(entity);
     }
 
-    public Entity findByIdAndEntityType(Integer entityId, EntityTypeEnum entityType) {
-        return entityRepository.findByIdAndEntityType(entityId, entityType);
-    }
 
     public Entity findByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType) {
         return entityRepository.findByEntityIdAndEntityType(entityId, entityType);

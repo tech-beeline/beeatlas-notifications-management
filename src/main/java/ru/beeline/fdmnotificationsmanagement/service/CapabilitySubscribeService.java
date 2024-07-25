@@ -197,16 +197,16 @@ public class CapabilitySubscribeService {
             EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
             if (entityTypeEnum != null) {
                 businessCapabilityProcess(entityId, user);
-                Entity entity = entityService.findByIdAndEntityType(entityId, entityTypeEnum);
-                dropSubscribe(entityId, entity, user);
+                Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
+                dropSubscribe(entity, user);
             }
         }
     }
 
-    private void dropSubscribe(Integer entityId, Entity entity, User user) {
+    private void dropSubscribe(Entity entity, User user) {
         if (entity != null) {
             subscribeRepository.deleteByUserAndEntity(user, entity);
-            List<EntityChange> entityChanges = entityChangeRepository.findAllByEntityId(entityId);
+            List<EntityChange> entityChanges = entityChangeRepository.findAllByEntity(entity);
             if (!entityChanges.isEmpty()) {
                 notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
                         user,
@@ -237,7 +237,7 @@ public class CapabilitySubscribeService {
         entities.addAll(entityService.findAllByEntityIdInAndEntityType(
                 businessCapabilityIds, businessCapabilityEntityTypeEnum));
 
-        entities.forEach(entity -> dropSubscribe(entity.getEntityId(), entity, user));
+        entities.forEach(entity -> dropSubscribe(entity, user));
     }
 
     public void addSubscribe(Integer entityId, Integer userId, String entityType, boolean subChildren) {
