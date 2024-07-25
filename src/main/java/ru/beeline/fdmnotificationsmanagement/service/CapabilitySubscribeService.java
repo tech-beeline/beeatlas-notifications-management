@@ -15,7 +15,6 @@ import ru.beeline.fdmnotificationsmanagement.domain.Notify;
 import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
 import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
-import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
 import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
@@ -40,10 +39,10 @@ public class CapabilitySubscribeService {
     private EntityTypeEnumService entityTypeEnumService;
 
     @Autowired
-    private EntityChangeRepository entityChangeRepository;
+    private EntityChangeService entityChangeService;
 
     @Autowired
-    private NotifyRepository notifyRepository;
+    private NotifyService notifyService;
 
     @Autowired
     private CapabilityClient capabilityClient;
@@ -114,7 +113,7 @@ public class CapabilitySubscribeService {
                                 .build())
                         .collect(Collectors.toList());
 
-                entityChangeRepository.saveAll(entityChanges);
+                entityChangeService.saveAll(entityChanges);
             }
         }
     }
@@ -140,7 +139,7 @@ public class CapabilitySubscribeService {
                         .link(generateLink(entityTypeEnumForCreate, entityId))
                         .entityType(entityTypeEnumForCreate)
                         .build());
-                entityChangeRepository.save(
+                entityChangeService.save(
                         EntityChange.builder()
                                 .changeType("CREATE")
                                 .entity(entity)
@@ -168,7 +167,7 @@ public class CapabilitySubscribeService {
                                 .emailNotify(false)
                                 .build())
                         .collect(Collectors.toList());
-                notifyRepository.saveAll(notifies);
+                notifyService.saveAll(notifies);
             }
 
         }
@@ -206,9 +205,9 @@ public class CapabilitySubscribeService {
     private void dropSubscribe(Entity entity, User user) {
         if (entity != null) {
             subscribeRepository.deleteByUserAndEntity(user, entity);
-            List<EntityChange> entityChanges = entityChangeRepository.findAllByEntity(entity);
+            List<EntityChange> entityChanges = entityChangeService.findAllByEntity(entity);
             if (!entityChanges.isEmpty()) {
-                notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
+                notifyService.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
                         user,
                         false,
                         false,
@@ -280,14 +279,6 @@ public class CapabilitySubscribeService {
         }
     }
 
-    public void patchNotify(Integer userId, List<Integer> notifyIds) {
-        User user = userService.findByUserId(userId);
-        if (user == null) {
-            throw new EntityNotFoundException("Пользователь не найден");
-        }
-        notifyRepository.updateWebNotifyByUserIdAndIds(userId, notifyIds);
-    }
-
     public void techQueueProcessor(int entityId, String name, String changeType) {
         EntityTypeEnum techEntityTypeEnum = entityTypeEnumService.getTechEntityTypeEnum();
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
@@ -307,7 +298,7 @@ public class CapabilitySubscribeService {
                                         .build()))
                                 .build())
                         .collect(Collectors.toList());
-                entityChangeRepository.saveAll(entityChanges);
+                entityChangeService.saveAll(entityChanges);
             }
         }
     }
