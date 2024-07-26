@@ -21,8 +21,5 @@ public interface NotifyRepository extends JpaRepository<Notify, Integer>, JpaSpe
                                                                    Collection<EntityChange> entityChange
     );
 
-    @Modifying
-    @Query("UPDATE Notify n SET n.webNotify = true WHERE n.id IN (SELECT n.id FROM Notify n JOIN User u ON n.user.id = u.id WHERE u.id = :userId AND n.id IN :ids AND n.webNotify = false)")
-    void updateWebNotifyByUserIdAndIds(@Param("userId") Integer userId, @Param("ids") List<Integer> ids);
-
+    List<Notify> findByIdInAndUser(List<Integer> ids, User user);
 }

@@ -107,12 +107,28 @@ public class NotifyService {
         return specification;
     }
 
-    public void patchNotify(Integer userId, List<Integer> notifyIds) {
+    public void patchNotify(Integer userId, String notifyType, List<Integer> notifyIds) {
         User user = userService.findByUserId(userId);
         if (user == null) {
             throw new EntityNotFoundException("Пользователь не найден");
         }
-        notifyRepository.updateWebNotifyByUserIdAndIds(userId, notifyIds);
+        List<Notify> notifies = notifyRepository.findByIdInAndUser(notifyIds, user);
+        notifies.forEach(notify -> {
+            switch (notifyType) {
+                case "web":
+                    notify.setWebNotify(true);
+                    break;
+                case "email":
+                    notify.setEmailNotify(true);
+                    break;
+                case "all":
+                    notify.setWebNotify(true);
+                    notify.setEmailNotify(true);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Передан не верный формат нотификаций");
+            }
+        });
+        notifyRepository.saveAll(notifies);
     }
-
 }
