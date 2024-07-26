@@ -23,18 +23,23 @@ public class ChangeTechCapabilityConsumer {
     public void techQueue(String message) {
         log.info("Received from tech_queue: " + message, new String(message.getBytes()));
         try {
-            JsonNode jsonNode = objectMapper.readTree(message);
-            if (jsonNode.has("entity_id")
-                    && jsonNode.has("change_type")
-                    && jsonNode.has("name")) {
-                capabilitySubscribeService.techQueueProcessor(
-                        jsonNode.get("entity_id").asInt(),
-                        jsonNode.get("name").asText(),
-                        jsonNode.get("change_type").asText()
-                );
-
+            JsonNode jsonArray = objectMapper.readTree(message);
+            if (jsonArray.isArray()) {
+                for (JsonNode jsonNode : jsonArray) {
+                    if (jsonNode.has("entity_id")
+                            && jsonNode.has("change_type")
+                            && jsonNode.has("name")) {
+                        capabilitySubscribeService.techQueueProcessor(
+                                jsonNode.get("entity_id").asInt(),
+                                jsonNode.get("name").asText(),
+                                jsonNode.get("change_type").asText()
+                        );
+                    } else {
+                        log.error("Message does not match the required format");
+                    }
+                }
             } else {
-                log.error("Message does not match the required format");
+                log.error("Message is not an array");
             }
         } catch (Exception e) {
             log.error("Internal server Error: " + e.getMessage());
