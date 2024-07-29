@@ -39,7 +39,7 @@ public class NotifySpecifications {
             Join<Notify, EntityChange> changeEntityJoin = root.join("entityChange", JoinType.INNER);
             Join<EntityChange, Entity> entityJoin = changeEntityJoin.join("entity", JoinType.INNER);
             Join<Entity, EntityTypeEnum> entityTypeEnumJoin = entityJoin.join("entityType", JoinType.INNER);
-            return criteriaBuilder.equal(entityTypeEnumJoin.get("type"), type);
+            return criteriaBuilder.equal(entityTypeEnumJoin.get("type"), EntityTypeEnum.CapabilitySubscriptionType.valueOf(type));
         };
     }
 }
