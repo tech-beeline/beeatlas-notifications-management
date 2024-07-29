@@ -98,20 +98,21 @@ public class CapabilitySubscribeService {
             }
             List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
             if (!subscribes.isEmpty()) {
-                List<EntityChange> entityChanges = subscribes.stream()
-                        .map(subscribe -> EntityChange.builder()
-                                .entity(subscribe.getEntity())
-                                .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                                .changeType("UPDATE")
-                                .notifies(List.of(Notify.builder()
-                                        .user(subscribe.getUser())
-                                        .webNotify(false)
-                                        .emailNotify(false)
-                                        .build()))
-                                .build())
-                        .collect(Collectors.toList());
-
-                entityChangeService.saveAll(entityChanges);
+                subscribes.forEach(subscribe -> {
+                    EntityChange entityChange = EntityChange.builder()
+                            .entity(subscribe.getEntity())
+                            .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                            .changeType("UPDATE")
+                            .build();
+                    entityChange = entityChangeService.save(entityChange);
+                    Notify notify = Notify.builder()
+                            .user(subscribe.getUser())
+                            .webNotify(false)
+                            .emailNotify(false)
+                            .entityChange(entityChange)
+                            .build();
+                    notifyService.save(notify);
+                });
             }
         }
     }
