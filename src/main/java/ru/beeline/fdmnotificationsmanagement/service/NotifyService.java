@@ -38,6 +38,10 @@ public class NotifyService {
         return notifyRepository.saveAll(notifies);
     }
 
+    public Notify save(Notify notify) {
+        return notifyRepository.save(notify);
+    }
+
     public void deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(User user,
                                                                           Boolean webNotify,
                                                                           Boolean emailNotify,

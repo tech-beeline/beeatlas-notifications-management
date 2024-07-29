@@ -15,8 +15,6 @@ import ru.beeline.fdmnotificationsmanagement.domain.Notify;
 import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
 import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
-import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
 
 import javax.transaction.Transactional;
@@ -139,7 +137,7 @@ public class CapabilitySubscribeService {
                         .link(generateLink(entityTypeEnumForCreate, entityId))
                         .entityType(entityTypeEnumForCreate)
                         .build());
-                entityChangeService.save(
+                EntityChange entityChange = entityChangeService.save(
                         EntityChange.builder()
                                 .changeType("CREATE")
                                 .entity(entity)
@@ -165,13 +163,12 @@ public class CapabilitySubscribeService {
                                 .user(user)
                                 .webNotify(false)
                                 .emailNotify(false)
+                                .entityChange(entityChange)
                                 .build())
                         .collect(Collectors.toList());
                 notifyService.saveAll(notifies);
             }
-
         }
-
     }
 
     public List<Integer> getAllEntitySubscribeByUserIdAndEntityType(Integer userId, String entityType) {
@@ -286,19 +283,21 @@ public class CapabilitySubscribeService {
             entity.setName(name);
             List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
             if (!subscribes.isEmpty()) {
-                List<EntityChange> entityChanges = subscribes.stream()
-                        .map(subscribe -> EntityChange.builder()
-                                .entity(subscribe.getEntity())
-                                .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                                .changeType(changeType)
-                                .notifies(List.of(Notify.builder()
-                                        .user(subscribe.getUser())
-                                        .webNotify(false)
-                                        .emailNotify(false)
-                                        .build()))
-                                .build())
-                        .collect(Collectors.toList());
-                entityChangeService.saveAll(entityChanges);
+                subscribes.forEach(subscribe -> {
+                    EntityChange entityChange = EntityChange.builder()
+                            .entity(subscribe.getEntity())
+                            .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                            .changeType(changeType)
+                            .build();
+                    entityChange = entityChangeService.save(entityChange);
+                    Notify notify = Notify.builder()
+                            .user(subscribe.getUser())
+                            .webNotify(false)
+                            .emailNotify(false)
+                            .entityChange(entityChange)
+                            .build();
+                    notifyService.save(notify);
+                });
             }
         }
     }
