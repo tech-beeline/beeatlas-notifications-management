@@ -216,25 +216,26 @@ public class CapabilitySubscribeService {
 
     private void businessCapabilityProcess(Integer entityId, User user) {
         BusinessCapabilityChildrenDTO businessCapabilityChildrenDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
+        if (businessCapabilityChildrenDTO != null) {
+            List<Integer> techCapabilityIds = businessCapabilityChildrenDTO.getTechCapabilities().stream()
+                    .map(TechCapabilityShortDTO::getId)
+                    .map(Math::toIntExact)
+                    .collect(Collectors.toList());
+            EntityTypeEnum techCapabilityEntityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
+            List<Entity> entities = entityService.findAllByEntityIdInAndEntityType(
+                    techCapabilityIds, techCapabilityEntityTypeEnum);
 
-        List<Integer> techCapabilityIds = businessCapabilityChildrenDTO.getTechCapabilities().stream()
-                .map(TechCapabilityShortDTO::getId)
-                .map(Math::toIntExact)
-                .collect(Collectors.toList());
-        EntityTypeEnum techCapabilityEntityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
-        List<Entity> entities = entityService.findAllByEntityIdInAndEntityType(
-                techCapabilityIds, techCapabilityEntityTypeEnum);
 
+            List<Integer> businessCapabilityIds = businessCapabilityChildrenDTO.getBusinessCapabilities().stream()
+                    .map(BusinessCapabilityDTO::getId)
+                    .map(Math::toIntExact)
+                    .collect(Collectors.toList());
+            EntityTypeEnum businessCapabilityEntityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+            entities.addAll(entityService.findAllByEntityIdInAndEntityType(
+                    businessCapabilityIds, businessCapabilityEntityTypeEnum));
 
-        List<Integer> businessCapabilityIds = businessCapabilityChildrenDTO.getBusinessCapabilities().stream()
-                .map(BusinessCapabilityDTO::getId)
-                .map(Math::toIntExact)
-                .collect(Collectors.toList());
-        EntityTypeEnum businessCapabilityEntityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        entities.addAll(entityService.findAllByEntityIdInAndEntityType(
-                businessCapabilityIds, businessCapabilityEntityTypeEnum));
-
-        entities.forEach(entity -> dropSubscribe(entity, user));
+            entities.forEach(entity -> dropSubscribe(entity, user));
+        }
     }
 
     public void addSubscribe(Integer entityId, Integer userId, String entityType, boolean subChildren) {
