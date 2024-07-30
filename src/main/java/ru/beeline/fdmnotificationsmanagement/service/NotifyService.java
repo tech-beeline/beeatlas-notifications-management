@@ -12,6 +12,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.Notify;
 import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.NotifySpecifications;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
+import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
 import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
 
@@ -116,6 +117,9 @@ public class NotifyService {
         if (user == null) {
             throw new EntityNotFoundException("Пользователь не найден");
         }
+        if (notifyIds == null) {
+            throw new BadRequestException("Параметр notifyIds не найден");
+        }
         List<Notify> notifies = notifyRepository.findByIdInAndUser(notifyIds, user);
         notifies.forEach(notify -> {
             switch (notifyType) {
@@ -130,7 +134,7 @@ public class NotifyService {
                     notify.setEmailNotify(true);
                     break;
                 default:
-                    throw new IllegalArgumentException("Передан не верный формат нотификаций");
+                    throw new IllegalArgumentException("Передан неверный формат нотификаций");
             }
         });
         notifyRepository.saveAll(notifies);

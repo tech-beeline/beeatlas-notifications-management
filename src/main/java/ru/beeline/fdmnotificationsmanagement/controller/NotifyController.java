@@ -46,7 +46,7 @@ public class NotifyController {
     @PatchMapping
     @ApiOperation(value = "Обновление статуса уведомлений")
     public ResponseEntity patchNotify(HttpServletRequest request,
-                                      @RequestParam(required = false) String notifyType,
+                                      @RequestParam(required = false, defaultValue = "all") String notifyType,
                                       @RequestBody List<Integer> notifyIds) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
         notifyService.patchNotify(userId, notifyType, notifyIds);
