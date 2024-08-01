@@ -206,10 +206,10 @@ public class CapabilitySubscribeService {
             List<EntityChange> entityChanges = entityChangeService.findAllByEntity(entity);
             if (!entityChanges.isEmpty()) {
                 notifyService.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
-                        user,
+                        user.getUserId(),
                         false,
                         false,
-                        entityChanges);
+                        entityChanges.stream().map(EntityChange::getId).collect(Collectors.toList()));
             }
         }
     }

@@ -43,15 +43,15 @@ public class NotifyService {
         return notifyRepository.save(notify);
     }
 
-    public void deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(User user,
+    public void deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(Integer user,
                                                                           Boolean webNotify,
                                                                           Boolean emailNotify,
-                                                                          Collection<EntityChange> entityChanges) {
+                                                                          Collection<Integer> entityChangesIds) {
         notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
                 user,
                 webNotify,
                 emailNotify,
-                entityChanges);
+                entityChangesIds);
     }
 
     public List<UnreadNotifyDTO> getNotify(Integer userId,
