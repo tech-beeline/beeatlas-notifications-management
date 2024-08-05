@@ -193,8 +193,16 @@ public class CapabilitySubscribeService {
         if (user != null) {
             EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
             if (entityTypeEnum != null) {
-                businessCapabilityProcess(entityId, user);
                 Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
+                long countSubscriptions = entity.getSubscribes().stream()
+                        .filter(it -> it.getUser().equals(user))
+                        .filter(Subscribe::getAutoSubChildren)
+                        .count();
+                if (EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_CAPABILITY.equals(entityTypeEnum.getType())
+                        && countSubscriptions > 0l
+                ) {
+                    businessCapabilityProcess(entityId, user);
+                }
                 dropSubscribe(entity, user);
             }
         }
