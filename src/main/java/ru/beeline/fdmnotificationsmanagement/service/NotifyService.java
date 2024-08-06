@@ -120,6 +120,7 @@ public class NotifyService {
         if (notifyIds == null) {
             throw new BadRequestException("Параметр notifyIds не найден");
         }
+        validateNotifyType(notifyType);
         List<Notify> notifies = notifyRepository.findByIdInAndUser(notifyIds, user);
         notifies.forEach(notify -> {
             switch (notifyType) {
@@ -133,10 +134,14 @@ public class NotifyService {
                     notify.setWebNotify(true);
                     notify.setEmailNotify(true);
                     break;
-                default:
-                    throw new IllegalArgumentException("Передан неверный формат нотификаций");
             }
         });
         notifyRepository.saveAll(notifies);
+    }
+
+    private void validateNotifyType(String notifyType) {
+        if (!List.of("web", "email", "all").contains(notifyType)) {
+            throw new IllegalArgumentException("Передан неверный формат нотификаций");
+        }
     }
 }
