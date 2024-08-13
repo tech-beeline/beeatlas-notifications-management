@@ -256,7 +256,8 @@ public class CapabilitySubscribeService {
         boolean autoSubChildren = entityType.equals("BUSINESS_CAPABILITY") && subChildren;
         findSubscribesOrCreate(entity, user, autoSubChildren);
         if (autoSubChildren) {
-            List<Entity> resultEntityList = new ArrayList<>();
+            List<Entity> resultTechEntityList = new ArrayList<>();
+            List<Entity> resultBusinessEntityList = new ArrayList<>();
             BusinessCapabilityChildrenDTO businessCapabilityChildrenDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
             List<Integer> techCapabilityIds = businessCapabilityChildrenDTO.getTechCapabilities().stream()
                     .map(TechCapabilityShortDTO::getId)
@@ -267,7 +268,7 @@ public class CapabilitySubscribeService {
                         generateLink(entityTypeEnumService.getTechCapabilityEntityTypeEnum(), entityId),
                         id,
                         entityTypeEnumService.getTechCapabilityEntityTypeEnum());
-                resultEntityList.add(techEntity);
+                resultTechEntityList.add(techEntity);
             });
             List<Integer> businessCapabilityIds = businessCapabilityChildrenDTO.getBusinessCapabilities().stream()
                     .map(BusinessCapabilityDTO::getId)
@@ -278,10 +279,11 @@ public class CapabilitySubscribeService {
                         generateLink(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(), entityId),
                         id,
                         entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
-                resultEntityList.add(businessEntity);
+                resultBusinessEntityList.add(businessEntity);
             });
 
-            resultEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, false));
+            resultTechEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, false));
+            resultBusinessEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, true));
 
         }
     }
