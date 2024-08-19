@@ -50,7 +50,8 @@ public class CapabilitySubscribeController {
 
     @DeleteMapping("/subscribe/{entityType}/{id}")
     @ApiOperation(value = "Удаление подписки")
-    public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer entityId, HttpServletRequest request) {
+    public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer entityId,
+                                 HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
         capabilityInteractionService.deleteSubscribe(entityId, userId, entityType);
         return ResponseEntity.status(HttpStatus.OK).build();

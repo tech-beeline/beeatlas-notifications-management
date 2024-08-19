@@ -265,7 +265,7 @@ public class CapabilitySubscribeService {
                     .collect(Collectors.toList());
             techCapabilityIds.forEach(id -> {
                 final Entity techEntity = entityService.getEntityOrCreate(
-                        generateLink(entityTypeEnumService.getTechCapabilityEntityTypeEnum(), entityId),
+                        generateLink(entityTypeEnumService.getTechCapabilityEntityTypeEnum(), id),
                         id,
                         entityTypeEnumService.getTechCapabilityEntityTypeEnum());
                 resultTechEntityList.add(techEntity);
@@ -276,7 +276,7 @@ public class CapabilitySubscribeService {
                     .collect(Collectors.toList());
             businessCapabilityIds.forEach(id -> {
                 final Entity businessEntity = entityService.getEntityOrCreate(
-                        generateLink(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(), entityId),
+                        generateLink(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(), id),
                         id,
                         entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
                 resultBusinessEntityList.add(businessEntity);
