@@ -210,11 +210,11 @@ public class CapabilitySubscribeService {
 
     private void dropSubscribe(Entity entity, User user) {
         if (entity != null) {
-            subscribeRepository.deleteByUserAndEntity(user, entity);
+            subscribeRepository.deleteByUserAndEntity(user.getId(), entity.getId());
             List<EntityChange> entityChanges = entityChangeService.findAllByEntity(entity);
             if (!entityChanges.isEmpty()) {
                 notifyService.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
-                        user.getUserId(),
+                        user.getId(),
                         false,
                         false,
                         entityChanges.stream().map(EntityChange::getId).collect(Collectors.toList()));

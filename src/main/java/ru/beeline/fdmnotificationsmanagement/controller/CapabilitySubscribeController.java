@@ -34,7 +34,8 @@ public class CapabilitySubscribeController {
     public ResponseEntity<List<Integer>> getSubscribesByEntityType(@PathVariable(value = "entityType") String entityType,
                                                                    HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-        return ResponseEntity.status(HttpStatus.OK).body(capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType));
+        List<Integer> ids = capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType);
+        return ResponseEntity.status(HttpStatus.OK).body(ids);
     }
 
     @PostMapping("/subscribe/{entityType}/{id}")
