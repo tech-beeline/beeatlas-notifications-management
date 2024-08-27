@@ -3,6 +3,7 @@ package ru.beeline.fdmnotificationsmanagement.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,8 @@ import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -54,7 +55,7 @@ public class NotifyService {
                 entityChangesIds);
     }
 
-    public List<UnreadNotifyDTO> getNotify(Integer userId,
+    public Page<UnreadNotifyDTO> getNotify(Integer userId,
                                            Timestamp afterDate,
                                            Timestamp beforeDate,
                                            String type,
@@ -70,10 +71,11 @@ public class NotifyService {
         PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20);
         Page<Notify> notifyPage = notifyRepository.findAll(specification, pageRequest);
 
-        return notifyPage.getContent().stream()
-                .map(this::mapUnreadNotifyDTO)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        if (!notifyPage.isEmpty()) {
+            List<UnreadNotifyDTO> result = notifyPage.stream().map(this::mapUnreadNotifyDTO).collect(Collectors.toList());
+            return new PageImpl<>(result, pageRequest, notifyPage.getTotalElements());
+        }
+        return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
     }
 
     private UnreadNotifyDTO mapUnreadNotifyDTO(Notify notify) {
