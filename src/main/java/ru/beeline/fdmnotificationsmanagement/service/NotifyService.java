@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmnotificationsmanagement.domain.Entity;
@@ -68,7 +69,7 @@ public class NotifyService {
 
         final Specification<Notify> specification = getNotifySpecification(afterDate, beforeDate, type, wasNotify, user);
 
-        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20);
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20, Sort.by("entityChange.dateChange").descending());
         Page<Notify> notifyPage = notifyRepository.findAll(specification, pageRequest);
 
         if (!notifyPage.isEmpty()) {
