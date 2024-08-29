@@ -63,13 +63,14 @@ public class NotifyService {
                                            Boolean wasNotify,
                                            Integer page) {
         User user = userService.findByUserId(userId);
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20, Sort.by("entityChange.dateChange").descending());
+
         if (user == null) {
-            throw new EntityNotFoundException("Пользователь не найден");
+            return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
         }
 
         final Specification<Notify> specification = getNotifySpecification(afterDate, beforeDate, type, wasNotify, user);
 
-        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20, Sort.by("entityChange.dateChange").descending());
         Page<Notify> notifyPage = notifyRepository.findAll(specification, pageRequest);
 
         if (!notifyPage.isEmpty()) {
