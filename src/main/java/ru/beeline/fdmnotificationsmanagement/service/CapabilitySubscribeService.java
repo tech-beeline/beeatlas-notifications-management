@@ -327,6 +327,6 @@ public class CapabilitySubscribeService {
 
     private String generateLink(EntityTypeEnum entityTypeEnum, Integer entityId) {
         String type = entityTypeEnum.getType().equals(EntityTypeEnum.CapabilitySubscriptionType.TECH_CAPABILITY) ? "TECH" : "BUSINESS";
-        return frontendServerUrl + "/models/fdm?id=" + entityId + "&type=" + type;
+        return frontendServerUrl + "/fdm?id=" + entityId + "&type=" + type;
     }
 }
