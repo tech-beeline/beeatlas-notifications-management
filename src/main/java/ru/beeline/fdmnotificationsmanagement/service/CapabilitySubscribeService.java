@@ -195,11 +195,11 @@ public class CapabilitySubscribeService {
             EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
             if (entityTypeEnum != null) {
                 if (entityTypeEnum.getId() != entityId) {
-                    throw new BadRequestException("400 Указанный id не соответствует id типа сущности");
+                    throw new BadRequestException(" 400 Указанный id не соответствует id типа сущности");
                 }
                 Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
                 if (entity == null) {
-                    throw new BadRequestException("400 Данный тип сущности отсутствует в базе данных");
+                    throw new BadRequestException(" 400 Данный тип сущности отсутствует в базе данных");
                 }
                 long countSubscriptions = entity.getSubscribes().stream()
                         .filter(it -> it.getUser().equals(user))
