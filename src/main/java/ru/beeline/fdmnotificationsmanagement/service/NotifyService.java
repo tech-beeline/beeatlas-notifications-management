@@ -63,10 +63,12 @@ public class NotifyService {
                                            String type,
                                            Boolean wasNotify,
                                            Integer page) {
-        try {
-            EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
-        } catch (Exception e) {
-            throw new BadRequestException("400 Неверно указан тип сущности");
+        if(type!=null) {
+            try {
+                EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
+            } catch (Exception e) {
+                throw new BadRequestException("400 Неверно указан тип сущности");
+            }
         }
         User user = userService.findByUserId(userId);
         PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20, Sort.by("entityChange.dateChange").descending());
