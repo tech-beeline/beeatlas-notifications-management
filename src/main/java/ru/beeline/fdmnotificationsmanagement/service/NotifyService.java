@@ -63,11 +63,10 @@ public class NotifyService {
                                            String type,
                                            Boolean wasNotify,
                                            Integer page) {
-        if (!EntityTypeEnum.CapabilitySubscriptionType.TECH_CAPABILITY.toString().equals(type) &&
-                !EntityTypeEnum.CapabilitySubscriptionType.BUSINESS.toString().equals(type) &&
-                !EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_CAPABILITY.toString().equals(type) &&
-                !EntityTypeEnum.CapabilitySubscriptionType.TECH.toString().equals(type)) {
-            throw new EntityNotFoundException(String.format("400 Некорректно введен тип: " + type));
+        try {
+            EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
+        } catch (Exception e) {
+            throw new BadRequestException("400 Неверно указан тип сущности");
         }
         User user = userService.findByUserId(userId);
         PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20, Sort.by("entityChange.dateChange").descending());
