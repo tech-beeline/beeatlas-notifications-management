@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmnotificationsmanagement.domain.Entity;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
+import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
 import ru.beeline.fdmnotificationsmanagement.domain.Notify;
 import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.NotifySpecifications;
@@ -62,6 +63,12 @@ public class NotifyService {
                                            String type,
                                            Boolean wasNotify,
                                            Integer page) {
+        if (!EntityTypeEnum.CapabilitySubscriptionType.TECH_CAPABILITY.toString().equals(type) &&
+                !EntityTypeEnum.CapabilitySubscriptionType.BUSINESS.toString().equals(type) &&
+                !EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_CAPABILITY.toString().equals(type) &&
+                !EntityTypeEnum.CapabilitySubscriptionType.TECH.toString().equals(type)) {
+            throw new EntityNotFoundException(String.format("400 Некорректно введен тип: " + type));
+        }
         User user = userService.findByUserId(userId);
         PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20, Sort.by("entityChange.dateChange").descending());
 
