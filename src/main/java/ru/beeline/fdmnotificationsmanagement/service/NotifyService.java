@@ -153,7 +153,7 @@ public class NotifyService {
 
     private void validateNotifyType(String notifyType) {
         if (!List.of("web", "email", "all").contains(notifyType)) {
-            throw new IllegalArgumentException("Передан неверный формат нотификаций");
+            throw new BadRequestException("Передан неверный формат нотификаций");
         }
     }
 }
