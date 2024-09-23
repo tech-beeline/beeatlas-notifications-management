@@ -174,11 +174,15 @@ public class CapabilitySubscribeService {
     }
 
     public List<Integer> getAllEntitySubscribeByUserIdAndEntityType(Integer userId, String entityType) {
+        log.info(String.format("getAllEntitySubscribeByUserIdAndEntityType userId =%s, entityType=%s", userId, entityType));
         User user = userService.findByUserId(userId);
+        log.info(String.format("user=%s", user));
         if (user != null) {
             List<Subscribe> subscribes = subscribeRepository.findAllByUser(user);
+            log.info(String.format("subscribes=%s", subscribes));
             if (!subscribes.isEmpty()) {
                 EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+                log.info(String.format("entityTypeEnum=%s", entityTypeEnum));
                 return subscribes.stream()
                         .map(Subscribe::getEntity)
                         .filter(entity -> entityTypeEnum == entity.getEntityType())
@@ -196,7 +200,7 @@ public class CapabilitySubscribeService {
             if (entityTypeEnum != null) {
                 Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
                 if (entity == null) {
-                    throw new BadRequestException(String.format("400 Сущность с id '%s' и типом '%s' не найдена",entityId,entityType));
+                    throw new BadRequestException(String.format("400 Сущность с id '%s' и типом '%s' не найдена", entityId, entityType));
                 }
                 long countSubscriptions = entity.getSubscribes().stream()
                         .filter(it -> it.getUser().equals(user))
