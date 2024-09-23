@@ -2,6 +2,7 @@ package ru.beeline.fdmnotificationsmanagement.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import static ru.beeline.fdmnotificationsmanagement.utils.Constant.USER_ID_HEADER;
 
+@Slf4j
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/api/v1")
@@ -35,6 +37,7 @@ public class CapabilitySubscribeController {
                                                                    HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
         List<Integer> ids = capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType);
+        log.info("result subscribes ids: ", ids);
         return ResponseEntity.status(HttpStatus.OK).body(ids);
     }
 
