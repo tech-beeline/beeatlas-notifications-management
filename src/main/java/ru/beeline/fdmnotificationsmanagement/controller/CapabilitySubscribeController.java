@@ -37,7 +37,7 @@ public class CapabilitySubscribeController {
                                                                    HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
         List<Integer> ids = capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType);
-        log.info("result subscribes ids: ", ids);
+        log.info("result subscribes ids: " + ids);
         return ResponseEntity.status(HttpStatus.OK).body(ids);
     }
 
