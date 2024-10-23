@@ -70,7 +70,7 @@ public class CapabilityClient {
             headers.add("SOURCE", "Sparx");
 
             HttpEntity<?> entity = new HttpEntity<>(headers);
-            return restTemplate.exchange(capabilityServerUrl + "/api/v1/business-capability/" + id +"/children",
+            return restTemplate.exchange(capabilityServerUrl + "/api/v1/business-capability/" + id +"/children/all",
                     HttpMethod.GET, entity, BusinessCapabilityChildrenDTO.class).getBody();
         } catch (Exception e) {
             log.error(e.getMessage());
