@@ -4,9 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenDTO;
-import ru.beeline.fdmlib.dto.capability.BusinessCapabilityDTO;
-import ru.beeline.fdmlib.dto.capability.TechCapabilityShortDTO;
+import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenIdsDTO;
 import ru.beeline.fdmnotificationsmanagement.client.CapabilityClient;
 import ru.beeline.fdmnotificationsmanagement.domain.Entity;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
@@ -231,20 +229,18 @@ public class CapabilitySubscribeService {
     }
 
     private void businessCapabilityProcess(Integer entityId, User user) {
-        BusinessCapabilityChildrenDTO businessCapabilityChildrenDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
-        if (businessCapabilityChildrenDTO != null) {
-            List<Integer> techCapabilityIds = businessCapabilityChildrenDTO.getTechCapabilities().stream()
-                    .map(TechCapabilityShortDTO::getId)
-                    .map(Math::toIntExact)
+        BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
+        if (businessCapabilityChildrenIdsDTO != null) {
+            List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
+                    .map(Long::intValue)
                     .collect(Collectors.toList());
             EntityTypeEnum techCapabilityEntityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
             List<Entity> entities = entityService.findAllByEntityIdInAndEntityType(
                     techCapabilityIds, techCapabilityEntityTypeEnum);
 
 
-            List<Integer> businessCapabilityIds = businessCapabilityChildrenDTO.getBusinessCapabilities().stream()
-                    .map(BusinessCapabilityDTO::getId)
-                    .map(Math::toIntExact)
+            List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
+                    .map(Long::intValue)
                     .collect(Collectors.toList());
             EntityTypeEnum businessCapabilityEntityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
             entities.addAll(entityService.findAllByEntityIdInAndEntityType(
@@ -266,10 +262,9 @@ public class CapabilitySubscribeService {
         if (autoSubChildren) {
             List<Entity> resultTechEntityList = new ArrayList<>();
             List<Entity> resultBusinessEntityList = new ArrayList<>();
-            BusinessCapabilityChildrenDTO businessCapabilityChildrenDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
-            List<Integer> techCapabilityIds = businessCapabilityChildrenDTO.getTechCapabilities().stream()
-                    .map(TechCapabilityShortDTO::getId)
-                    .map(Math::toIntExact)
+            BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
+            List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
+                    .map(Long::intValue)
                     .collect(Collectors.toList());
             techCapabilityIds.forEach(id -> {
                 final Entity techEntity = entityService.getEntityOrCreate(
@@ -278,9 +273,8 @@ public class CapabilitySubscribeService {
                         entityTypeEnumService.getTechCapabilityEntityTypeEnum());
                 resultTechEntityList.add(techEntity);
             });
-            List<Integer> businessCapabilityIds = businessCapabilityChildrenDTO.getBusinessCapabilities().stream()
-                    .map(BusinessCapabilityDTO::getId)
-                    .map(Math::toIntExact)
+            List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
+                    .map(Long::intValue)
                     .collect(Collectors.toList());
             businessCapabilityIds.forEach(id -> {
                 final Entity businessEntity = entityService.getEntityOrCreate(
