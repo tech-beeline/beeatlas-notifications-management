@@ -6,6 +6,7 @@ env:
   SPRING_RABBITMQ_TEMPLATE_EXCHANGE: "vault:eafdmmart/data/dev/fdm#rabbitmqtemplateexchange"
   SPRING_RABBITMQ_TEMPLATE_ROUTING_KEY: "vault:eafdmmart/data/dev/fdm#rabbitmqtemplateroutingkey"
   SPRING_RABBITMQ_HOST: "vault:eafdmmart/data/dev/fdm#rabbitmqhost"
+  SPRING_RABBITMQ_TOKEN_URL: "vault:eafdmmart/data/dev/fdm#rabbitmqtokenurl"
   SPRING_RABBITMQ_PORT: "vault:eafdmmart/data/dev/fdm#rabbitmqport"
   SPRING_RABBITMQ_USERNAME: "vault:eafdmmart/data/dev/fdm#rabbitmqusername"
   SPRING_RABBITMQ_PASSWORD: "vault:eafdmmart/data/dev/fdm#rabbitmqpassword"

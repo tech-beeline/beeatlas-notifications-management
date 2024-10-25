@@ -9,9 +9,23 @@ import org.springframework.amqp.support.converter.SimpleMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Map;
 @Configuration
 public class RabbitConfig {
+
+    @Autowired
+    RestTemplate restTemplate;
+
+    @Value("${spring.rabbitmq.token-url}")
+    private String tokenUrl;
+
 
     @Value("${spring.rabbitmq.username}")
     private String userName;
@@ -50,12 +64,24 @@ public class RabbitConfig {
 
     @Bean
     public CachingConnectionFactory connectionFactory() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        String requestBody = "username=" + userName + "&password=" + password +
+                "&client_id=producer&grant_type=password";
+
+        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, entity, Map.class);
+
+
+        String accessToken = (String) response.getBody().get("access_token");
         CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(connectFactoryName);
         cachingConnectionFactory.setUsername(userName);
-        cachingConnectionFactory.setPassword(password);
+        cachingConnectionFactory.setPassword(accessToken);
         cachingConnectionFactory.setVirtualHost(virtualHost);
         return cachingConnectionFactory;
     }
+
 
     @Bean
     MessageConverter messageConverter() {
