@@ -14,6 +14,7 @@ RUN update-ca-certificates
 RUN update-ca-certificates
 RUN keytool -importcert -file VC_RootCA.crt -alias VC_RootCA -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit -noprompt -trustcacerts
 RUN keytool -import -alias apps.yd-m6-kt22.vimpelcom -keystore $JAVA_HOME/lib/security/cacerts -file apps.yd-m6-kt22.vimpelcom.ru.crt -storepass changeit
+USER app
 RUN keytool -importcert -file VC_RootCA.crt -alias VC_RootCA -storepass changeit -noprompt -trustcacerts
 RUN keytool -importcert -file VC_BEERootCA.crt -alias VC_BEERootCA -storepass changeit -noprompt -trustcacerts
 RUN keytool -importcert -file apps.yd-m6-kt22.vimpelcom.ru.crt -alias apps.yd-m6-kt22.vimpelcom.ru -storepass changeit -noprompt -trustcacerts
