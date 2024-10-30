@@ -14,6 +14,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
 import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
+import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
 
 import javax.transaction.Transactional;
@@ -258,35 +259,39 @@ public class CapabilitySubscribeService {
                 entityId,
                 entityTypeEnum);
         boolean autoSubChildren = entityType.equals("BUSINESS_CAPABILITY") && subChildren;
-        findSubscribesOrCreate(entity, user, autoSubChildren);
-        if (autoSubChildren) {
-            List<Entity> resultTechEntityList = new ArrayList<>();
-            List<Entity> resultBusinessEntityList = new ArrayList<>();
-            BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
-            List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
-                    .map(Long::intValue)
-                    .collect(Collectors.toList());
-            techCapabilityIds.forEach(id -> {
-                final Entity techEntity = entityService.getEntityOrCreate(
-                        generateLink(entityTypeEnumService.getTechCapabilityEntityTypeEnum(), id),
-                        id,
-                        entityTypeEnumService.getTechCapabilityEntityTypeEnum());
-                resultTechEntityList.add(techEntity);
-            });
-            List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
-                    .map(Long::intValue)
-                    .collect(Collectors.toList());
-            businessCapabilityIds.forEach(id -> {
-                final Entity businessEntity = entityService.getEntityOrCreate(
-                        generateLink(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(), id),
-                        id,
-                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
-                resultBusinessEntityList.add(businessEntity);
-            });
+        if(subscribeRepository.findByUserAndEntity(user, entity)==null) {
+            findSubscribesOrCreate(entity, user, autoSubChildren);
+            if (autoSubChildren) {
+                List<Entity> resultTechEntityList = new ArrayList<>();
+                List<Entity> resultBusinessEntityList = new ArrayList<>();
+                BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
+                if(businessCapabilityChildrenIdsDTO==null){
+                    throw new EntityNotFoundException("Business Capability с данным Id не найдено");
+                }
+                List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
+                        .map(Long::intValue)
+                        .collect(Collectors.toList());
+                techCapabilityIds.forEach(id -> {
+                    final Entity techEntity = entityService.getEntityOrCreate(
+                            generateLink(entityTypeEnumService.getTechCapabilityEntityTypeEnum(), id),
+                            id,
+                            entityTypeEnumService.getTechCapabilityEntityTypeEnum());
+                    resultTechEntityList.add(techEntity);
+                });
+                List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
+                        .map(Long::intValue)
+                        .collect(Collectors.toList());
+                businessCapabilityIds.forEach(id -> {
+                    final Entity businessEntity = entityService.getEntityOrCreate(
+                            generateLink(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(), id),
+                            id,
+                            entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
+                    resultBusinessEntityList.add(businessEntity);
+                });
 
-            resultTechEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, false));
-            resultBusinessEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, true));
-
+                resultTechEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, false));
+                resultBusinessEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, true));
+            }
         }
     }
 
