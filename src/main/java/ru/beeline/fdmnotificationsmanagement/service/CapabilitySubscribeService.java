@@ -6,12 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenIdsDTO;
 import ru.beeline.fdmnotificationsmanagement.client.CapabilityClient;
-import ru.beeline.fdmnotificationsmanagement.domain.Entity;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.domain.Notify;
-import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
-import ru.beeline.fdmnotificationsmanagement.domain.User;
+import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
@@ -266,10 +261,13 @@ public class CapabilitySubscribeService {
         if (subscribeRepository.findByUserAndEntity(user, entity) == null) {
             findSubscribesOrCreate(entity, user, autoSubChildren);
             if (autoSubChildren) {
+                log.info("capabilityClient.getBusinessCapabilityKidsById(entityId):");
                 BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
                 if (businessCapabilityChildrenIdsDTO == null) {
                     throw new EntityNotFoundException("Business Capability с данным Id не найдено");
                 }
+                log.info("techCapability childrenDTO size: " + businessCapabilityChildrenIdsDTO.getTechCapability().size());
+                log.info("businessCapability childrenDTO size: " + businessCapabilityChildrenIdsDTO.getBusinessCapability().size());
                 List<Entity> resultTechEntityList = getEntityTcOrCreate(businessCapabilityChildrenIdsDTO);
                 List<Entity> resultBusinessEntityList = getEntityBcOrCreate(businessCapabilityChildrenIdsDTO);
                 findOrCreateSubscribes(resultTechEntityList, user, false);
@@ -279,6 +277,7 @@ public class CapabilitySubscribeService {
     }
 
     private void findOrCreateSubscribes(List<Entity> entities, User user, boolean autoSubChildren) {
+        log.info("findOrCreateSubscribes");
         List<Subscribe> existingSubscribes = subscribeRepository.findByUserAndEntityIn(user, entities);
         Set<Entity> existingEntities = existingSubscribes.stream()
                 .map(Subscribe::getEntity)
@@ -297,6 +296,7 @@ public class CapabilitySubscribeService {
     }
 
     private List<Entity> getEntityTcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
+        log.info("getEntityTcOrCreate");
         List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
                 .map(Long::intValue)
                 .collect(Collectors.toList());
@@ -319,6 +319,7 @@ public class CapabilitySubscribeService {
     }
 
     private List<Entity> getEntityBcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
+        log.info("getEntityBcOrCreate");
         List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
                 .map(Long::intValue)
                 .collect(Collectors.toList());
