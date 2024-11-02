@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface EntityRepository extends JpaRepository<Entity, Integer> {
-    Entity findByIdAndEntityType(Integer id, EntityTypeEnum entityType);
 
     Entity findByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType);
 
