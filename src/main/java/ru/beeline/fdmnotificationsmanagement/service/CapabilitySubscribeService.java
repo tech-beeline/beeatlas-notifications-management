@@ -15,6 +15,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
+import ru.beeline.fdmnotificationsmanagement.repository.EntityRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
 
 import javax.transaction.Transactional;
@@ -32,6 +33,9 @@ public class CapabilitySubscribeService {
 
     @Value("${integration.frontend-server-url}")
     private String frontendServerUrl;
+
+    @Autowired
+    private EntityRepository entityRepository;
 
     @Autowired
     private EntityTypeEnumService entityTypeEnumService;
@@ -259,40 +263,63 @@ public class CapabilitySubscribeService {
                 entityId,
                 entityTypeEnum);
         boolean autoSubChildren = entityType.equals("BUSINESS_CAPABILITY") && subChildren;
-        if(subscribeRepository.findByUserAndEntity(user, entity)==null) {
+        if (subscribeRepository.findByUserAndEntity(user, entity) == null) {
             findSubscribesOrCreate(entity, user, autoSubChildren);
             if (autoSubChildren) {
-                List<Entity> resultTechEntityList = new ArrayList<>();
-                List<Entity> resultBusinessEntityList = new ArrayList<>();
                 BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
-                if(businessCapabilityChildrenIdsDTO==null){
+                if (businessCapabilityChildrenIdsDTO == null) {
                     throw new EntityNotFoundException("Business Capability с данным Id не найдено");
                 }
-                List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
-                        .map(Long::intValue)
-                        .collect(Collectors.toList());
-                techCapabilityIds.forEach(id -> {
-                    final Entity techEntity = entityService.getEntityOrCreate(
-                            generateLink(entityTypeEnumService.getTechCapabilityEntityTypeEnum(), id),
-                            id,
-                            entityTypeEnumService.getTechCapabilityEntityTypeEnum());
-                    resultTechEntityList.add(techEntity);
-                });
-                List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
-                        .map(Long::intValue)
-                        .collect(Collectors.toList());
-                businessCapabilityIds.forEach(id -> {
-                    final Entity businessEntity = entityService.getEntityOrCreate(
-                            generateLink(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(), id),
-                            id,
-                            entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
-                    resultBusinessEntityList.add(businessEntity);
-                });
-
+                List<Entity> resultTechEntityList = getEntityTcOrCreate(businessCapabilityChildrenIdsDTO);
+                List<Entity> resultBusinessEntityList = getEntityBcOrCreate(businessCapabilityChildrenIdsDTO);
                 resultTechEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, false));
                 resultBusinessEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, true));
             }
         }
+    }
+
+    private List<Entity> getEntityTcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
+        List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
+                .map(Long::intValue)
+                .collect(Collectors.toList());
+        List<Entity> resultTechEntityList = entityRepository.findAllByEntityIdInAndEntityType(techCapabilityIds, entityTypeEnumService.getTechCapabilityEntityTypeEnum());
+        Set<Integer> foundIds = resultTechEntityList.stream()
+                .map(Entity::getEntityId)
+                .collect(Collectors.toSet());
+        List<Integer> missingIds = techCapabilityIds.stream()
+                .filter(id -> !foundIds.contains(id))
+                .collect(Collectors.toList());
+        List<Entity> newTcEntities = missingIds.stream()
+                .map(id -> Entity.builder()
+                        .entityId(id)
+                        .link(generateLink(entityTypeEnumService.getTechCapabilityEntityTypeEnum(), id))
+                        .entityType(entityTypeEnumService.getTechCapabilityEntityTypeEnum())
+                        .build())
+                .collect(Collectors.toList());
+        resultTechEntityList.addAll(entityRepository.saveAll(newTcEntities));
+        return resultTechEntityList;
+    }
+
+    private List<Entity> getEntityBcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
+        List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
+                .map(Long::intValue)
+                .collect(Collectors.toList());
+        List<Entity> resultBusinessEntityList = entityRepository.findAllByEntityIdInAndEntityType(businessCapabilityIds, entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
+        Set<Integer> foundIds = resultBusinessEntityList.stream()
+                .map(Entity::getEntityId)
+                .collect(Collectors.toSet());
+        List<Integer> missingIds = businessCapabilityIds.stream()
+                .filter(id -> !foundIds.contains(id))
+                .collect(Collectors.toList());
+        List<Entity> newBcEntities = missingIds.stream()
+                .map(id -> Entity.builder()
+                        .entityId(id)
+                        .link(generateLink(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(), id))
+                        .entityType(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum())
+                        .build())
+                .collect(Collectors.toList());
+        resultBusinessEntityList.addAll(entityRepository.saveAll(newBcEntities));
+        return resultBusinessEntityList;
     }
 
     public void techQueueProcessor(int entityId, String name, String changeType) {
