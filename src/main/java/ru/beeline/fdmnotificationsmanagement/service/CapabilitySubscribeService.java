@@ -272,10 +272,28 @@ public class CapabilitySubscribeService {
                 }
                 List<Entity> resultTechEntityList = getEntityTcOrCreate(businessCapabilityChildrenIdsDTO);
                 List<Entity> resultBusinessEntityList = getEntityBcOrCreate(businessCapabilityChildrenIdsDTO);
-                resultTechEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, false));
-                resultBusinessEntityList.forEach(eachEntity -> findSubscribesOrCreate(eachEntity, user, true));
+                findOrCreateSubscribes(resultTechEntityList, user, false);
+                findOrCreateSubscribes(resultBusinessEntityList, user, true);
             }
         }
+    }
+
+    private void findOrCreateSubscribes(List<Entity> entities, User user, boolean autoSubChildren) {
+        List<Subscribe> existingSubscribes = subscribeRepository.findByUserAndEntityIn(user, entities);
+        Set<Entity> existingEntities = existingSubscribes.stream()
+                .map(Subscribe::getEntity)
+                .collect(Collectors.toSet());
+        List<Entity> entitiesToCreate = entities.stream()
+                .filter(entity -> !existingEntities.contains(entity))
+                .collect(Collectors.toList());
+        List<Subscribe> newSubscribes = entitiesToCreate.stream()
+                .map(entity -> Subscribe.builder()
+                        .user(user)
+                        .entity(entity)
+                        .autoSubChildren(autoSubChildren)
+                        .build())
+                .collect(Collectors.toList());
+        subscribeRepository.saveAll(newSubscribes);
     }
 
     private List<Entity> getEntityTcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
