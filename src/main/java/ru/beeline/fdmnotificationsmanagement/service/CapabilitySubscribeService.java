@@ -302,9 +302,9 @@ public class CapabilitySubscribeService {
 
     private List<Entity> getEntityTcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
         log.info("getEntityTcOrCreate");
-        List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
-                .map(Long::intValue)
-                .collect(Collectors.toList());
+        List<Integer> techCapabilityIds = new ArrayList<>(businessCapabilityChildrenIdsDTO.getTechCapability()
+                .stream().map(Long::intValue)
+                .collect(Collectors.toSet()));
         List<Entity> resultTechEntityList = entityRepository.findAllByEntityIdInAndEntityType(techCapabilityIds, entityTypeEnumService.getTechCapabilityEntityTypeEnum());
         Set<Integer> foundIds = resultTechEntityList.stream()
                 .map(Entity::getEntityId)
