@@ -23,9 +23,9 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
 
     List<Subscribe> findByAutoSubChildrenTrue();
 
-    @Modifying
-    @Query(value = "DELETE FROM notification.subscribe " +
-            "WHERE notification.subscribe.user_id = :userId " +
-            "AND notification.subscribe.entity_id = :entityId", nativeQuery = true)
-    void deleteByUserAndEntity(@Param("userId") Integer userId, @Param("entityId") Integer entityId);
+@Modifying
+@Query(value = "DELETE FROM notification.subscribe " +
+        "WHERE notification.subscribe.user_id = :userId " +
+        "AND notification.subscribe.entity_id IN (:entityIds)", nativeQuery = true)
+void deleteAllByUserIdAndEntityIdIn(@Param("userId") Integer userId, @Param("entityIds") List<Integer> entityIds);
 }

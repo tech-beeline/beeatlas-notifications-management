@@ -9,5 +9,6 @@ import java.util.List;
 
 @Repository
 public interface EntityChangeRepository extends JpaRepository<EntityChange, Long> {
-    List<EntityChange> findAllByEntity(Entity entity);
+
+    List<EntityChange> findAllByEntityIn(List<Entity> entities);
 }
