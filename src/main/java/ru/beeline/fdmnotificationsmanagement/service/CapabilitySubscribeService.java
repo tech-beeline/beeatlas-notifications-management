@@ -266,7 +266,7 @@ public class CapabilitySubscribeService {
         if (subscribeRepository.findByUserAndEntity(user, entity) == null) {
             findSubscribesOrCreate(entity, user, autoSubChildren);
             if (autoSubChildren) {
-                log.info("capabilityClient.getBusinessCapabilityKidsById(entityId):");
+                log.info("capabilityClient.getBusinessCapabilityKidsById(entityId): ");
                 BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
                 if (businessCapabilityChildrenIdsDTO == null) {
                     throw new EntityNotFoundException("Business Capability с данным Id не найдено");
