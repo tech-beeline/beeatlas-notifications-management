@@ -15,6 +15,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
+import ru.beeline.fdmnotificationsmanagement.repository.EntityChangeRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.EntityRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
 
@@ -30,6 +31,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class CapabilitySubscribeService {
+
+    @Autowired
+    private EntityChangeRepository entityChangeRepository;
 
     @Value("${integration.frontend-server-url}")
     private String frontendServerUrl;
@@ -197,13 +201,15 @@ public class CapabilitySubscribeService {
     }
 
     public void deleteSubscribe(Integer entityId, Integer userId, String entityType) {
+        log.info("start deleteSubscribe method");
         User user = userService.findByUserId(userId);
         if (user != null) {
             EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
             if (entityTypeEnum != null) {
                 Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
                 if (entity == null) {
-                    throw new BadRequestException(String.format("400 Сущность с id '%s' и типом '%s' не найдена", entityId, entityType));
+                    throw new BadRequestException(String.format("400 Сущность с id '%s' и типом '%s' не найдена",
+                            entityId, entityType));
                 }
                 long countSubscriptions = entity.getSubscribes().stream()
                         .filter(it -> it.getUser().equals(user))
@@ -214,27 +220,16 @@ public class CapabilitySubscribeService {
                 ) {
                     businessCapabilityProcess(entityId, user);
                 }
-                dropSubscribe(entity, user);
-            }
-        }
-    }
-
-    private void dropSubscribe(Entity entity, User user) {
-        if (entity != null) {
-            subscribeRepository.deleteByUserAndEntity(user.getId(), entity.getId());
-            List<EntityChange> entityChanges = entityChangeService.findAllByEntity(entity);
-            if (!entityChanges.isEmpty()) {
-                notifyService.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
-                        user.getId(),
-                        false,
-                        false,
-                        entityChanges.stream().map(EntityChange::getId).collect(Collectors.toList()));
+                dropSubscribe(List.of(entity), user);
+                log.info("deleteSubscribe method completed");
             }
         }
     }
 
     private void businessCapabilityProcess(Integer entityId, User user) {
+        log.info("start capabilityClient.getBusinessCapabilityKidsById");
         BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
+        log.info("capabilityClient.getBusinessCapabilityKidsById completed");
         if (businessCapabilityChildrenIdsDTO != null) {
             List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
                     .map(Long::intValue)
@@ -243,15 +238,29 @@ public class CapabilitySubscribeService {
             List<Entity> entities = entityService.findAllByEntityIdInAndEntityType(
                     techCapabilityIds, techCapabilityEntityTypeEnum);
 
-
             List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
                     .map(Long::intValue)
                     .collect(Collectors.toList());
             EntityTypeEnum businessCapabilityEntityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
             entities.addAll(entityService.findAllByEntityIdInAndEntityType(
                     businessCapabilityIds, businessCapabilityEntityTypeEnum));
+            log.info("the list of entities is filled in");
+            log.info("dropSubscribe start");
+            dropSubscribe(entities, user);
+        }
+    }
 
-            entities.forEach(entity -> dropSubscribe(entity, user));
+    private void dropSubscribe(List<Entity> entities, User user) {
+        if (entities != null && !entities.isEmpty()) {
+            List<Integer> entityIds = entities.stream()
+                    .map(Entity::getId)
+                    .collect(Collectors.toList());
+            subscribeRepository.deleteAllByUserIdAndEntityIdIn(user.getId(), entityIds);
+                notifyService.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
+                        user.getId(),
+                        false,
+                        false,
+                        entityIds);
         }
     }
 
