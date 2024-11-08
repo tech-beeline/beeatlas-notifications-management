@@ -185,17 +185,11 @@ public class CapabilitySubscribeService {
         User user = userService.findByUserId(userId);
         log.info(String.format("user=%s", user));
         if (user != null) {
-            List<Subscribe> subscribes = subscribeRepository.findAllByUser(user);
-            log.info(String.format("subscribes=%s", subscribes));
-            if (!subscribes.isEmpty()) {
-                EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
-                log.info(String.format("entityTypeEnum=%s", entityTypeEnum));
-                return subscribes.stream()
-                        .map(Subscribe::getEntity)
-                        .filter(entity -> entityTypeEnum == entity.getEntityType())
-                        .map(Entity::getEntityId)
-                        .collect(Collectors.toList());
-            }
+            EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+            log.info(String.format("entityTypeEnum=%s", entityTypeEnum));
+            List<Integer> entityIds = subscribeRepository.findAllEntityIdsByUserAndEntityEntityType(user, entityTypeEnum);
+            log.info(String.format("entityIds=%s", entityIds));
+            return entityIds;
         }
         return new ArrayList<>();
     }
@@ -265,6 +259,7 @@ public class CapabilitySubscribeService {
     }
 
     public void addSubscribe(Integer entityId, Integer userId, String entityType, boolean subChildren) {
+        log.info("start addSubscribe method");
         User user = userService.findByUserIdOrCreate(userId);
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
         final Entity entity = entityService.getEntityOrCreate(
@@ -286,6 +281,7 @@ public class CapabilitySubscribeService {
                 List<Entity> resultBusinessEntityList = getEntityBcOrCreate(businessCapabilityChildrenIdsDTO);
                 findOrCreateSubscribes(resultTechEntityList, user, false);
                 findOrCreateSubscribes(resultBusinessEntityList, user, true);
+                log.info("addSubscribe method completed");
             }
         }
     }
@@ -293,6 +289,7 @@ public class CapabilitySubscribeService {
     private void findOrCreateSubscribes(List<Entity> entities, User user, boolean autoSubChildren) {
         log.info("findOrCreateSubscribes");
         List<Subscribe> existingSubscribes = subscribeRepository.findByUserAndEntityIn(user, entities);
+        log.info("findByUserAndEntityIn");
         Set<Entity> existingEntities = existingSubscribes.stream()
                 .map(Subscribe::getEntity)
                 .collect(Collectors.toSet());
@@ -306,7 +303,9 @@ public class CapabilitySubscribeService {
                         .autoSubChildren(autoSubChildren)
                         .build())
                 .collect(Collectors.toList());
+        log.info("saveAll");
         subscribeRepository.saveAll(newSubscribes);
+        log.info("findOrCreateSubscribes method completed");
     }
 
     private List<Entity> getEntityTcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
