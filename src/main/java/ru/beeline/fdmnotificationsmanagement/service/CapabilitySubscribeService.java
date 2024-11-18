@@ -310,9 +310,9 @@ public class CapabilitySubscribeService {
     private List<Entity> getEntityTcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
         log.info("getEntityTcOrCreate");
         List<Entity> resultTechEntityList = entityRepository.findAllByEntityIdInAndEntityType(
-                businessCapabilityChildrenIdsDTO.getTechCapability().stream()
+                new ArrayList<>(businessCapabilityChildrenIdsDTO.getTechCapability().stream()
                         .map(Long::intValue)
-                        .collect(Collectors.toList()),
+                        .collect(Collectors.toSet())),
                 entityTypeEnumService.getTechCapabilityEntityTypeEnum());
 
         List<Entity> newTcEntities = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
@@ -333,9 +333,9 @@ public class CapabilitySubscribeService {
     private List<Entity> getEntityBcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
         log.info("getEntityBcOrCreate");
         List<Entity> resultBusinessEntityList = entityRepository.findAllByEntityIdInAndEntityType(
-                businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
+                new ArrayList<>(businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
                         .map(Long::intValue)
-                        .collect(Collectors.toList()),
+                        .collect(Collectors.toSet())),
                 entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
 
         List<Entity> newBcEntities = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
