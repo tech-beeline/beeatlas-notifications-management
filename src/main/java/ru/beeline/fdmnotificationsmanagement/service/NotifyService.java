@@ -3,11 +3,14 @@ package ru.beeline.fdmnotificationsmanagement.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmnotificationsmanagement.domain.Entity;
 import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
+import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
 import ru.beeline.fdmnotificationsmanagement.domain.Notify;
 import ru.beeline.fdmnotificationsmanagement.domain.User;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.NotifySpecifications;
@@ -19,8 +22,8 @@ import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -46,34 +49,43 @@ public class NotifyService {
     public void deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(Integer user,
                                                                           Boolean webNotify,
                                                                           Boolean emailNotify,
-                                                                          Collection<Integer> entityChangesIds) {
+                                                                          Collection<Integer> entityIds) {
         notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
                 user,
                 webNotify,
                 emailNotify,
-                entityChangesIds);
+                entityIds);
     }
 
-    public List<UnreadNotifyDTO> getNotify(Integer userId,
+    public Page<UnreadNotifyDTO> getNotify(Integer userId,
                                            Timestamp afterDate,
                                            Timestamp beforeDate,
                                            String type,
                                            Boolean wasNotify,
                                            Integer page) {
+        if(type!=null) {
+            try {
+                EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
+            } catch (Exception e) {
+                throw new BadRequestException("400 Неверно указан тип сущности");
+            }
+        }
         User user = userService.findByUserId(userId);
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20, Sort.by("entityChange.dateChange").descending());
+
         if (user == null) {
-            throw new EntityNotFoundException("Пользователь не найден");
+            return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
         }
 
         final Specification<Notify> specification = getNotifySpecification(afterDate, beforeDate, type, wasNotify, user);
 
-        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20);
         Page<Notify> notifyPage = notifyRepository.findAll(specification, pageRequest);
 
-        return notifyPage.getContent().stream()
-                .map(this::mapUnreadNotifyDTO)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        if (!notifyPage.isEmpty()) {
+            List<UnreadNotifyDTO> result = notifyPage.stream().map(this::mapUnreadNotifyDTO).collect(Collectors.toList());
+            return new PageImpl<>(result, pageRequest, notifyPage.getTotalElements());
+        }
+        return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
     }
 
     private UnreadNotifyDTO mapUnreadNotifyDTO(Notify notify) {
@@ -141,7 +153,7 @@ public class NotifyService {
 
     private void validateNotifyType(String notifyType) {
         if (!List.of("web", "email", "all").contains(notifyType)) {
-            throw new IllegalArgumentException("Передан неверный формат нотификаций");
+            throw new BadRequestException("Передан неверный формат нотификаций");
         }
     }
 }

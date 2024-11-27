@@ -18,11 +18,11 @@ public interface NotifyRepository extends JpaRepository<Notify, Integer>, JpaSpe
     @Query(value = "DELETE FROM notification.notify " +
             "WHERE notification.notify.user_id = :userId " +
             "AND (notification.notify.web_notify = :webNotify OR notification.notify.email_notify = :emailNotify) " +
-            "AND notification.notify.change_id IN (:entityChangeIds);", nativeQuery = true)
+            "AND notification.notify.change_id IN (SELECT id FROM notification.entity_change WHERE entity_id IN :entityIds);", nativeQuery = true)
     void deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(@Param("userId") Integer userId,
                                                                    @Param("webNotify") Boolean webNotify,
                                                                    @Param("emailNotify") Boolean emailNotify,
-                                                                   @Param("entityChangeIds") Collection<Integer> entityChangesIds);
+                                                                   @Param("entityIds") Collection<Integer> entityIds);
 
     List<Notify> findByIdInAndUser(List<Integer> ids, User user);
 }

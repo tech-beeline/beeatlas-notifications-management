@@ -2,6 +2,7 @@ package ru.beeline.fdmnotificationsmanagement.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import static ru.beeline.fdmnotificationsmanagement.utils.Constant.USER_ID_HEADER;
 
+@Slf4j
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/api/v1")
@@ -34,7 +36,9 @@ public class CapabilitySubscribeController {
     public ResponseEntity<List<Integer>> getSubscribesByEntityType(@PathVariable(value = "entityType") String entityType,
                                                                    HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-        return ResponseEntity.status(HttpStatus.OK).body(capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType));
+        List<Integer> ids = capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType);
+        log.info("result subscribes ids: " + ids);
+        return ResponseEntity.status(HttpStatus.OK).body(ids);
     }
 
     @PostMapping("/subscribe/{entityType}/{id}")
@@ -50,7 +54,8 @@ public class CapabilitySubscribeController {
 
     @DeleteMapping("/subscribe/{entityType}/{id}")
     @ApiOperation(value = "Удаление подписки")
-    public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer entityId, HttpServletRequest request) {
+    public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer entityId,
+                                 HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
         capabilityInteractionService.deleteSubscribe(entityId, userId, entityType);
         return ResponseEntity.status(HttpStatus.OK).build();
