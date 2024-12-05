@@ -397,7 +397,7 @@ public class CapabilitySubscribeService {
                 path = frontendServerUrl + "/models/fdm?id=" + entityId + "&type=BUSINESS";
                 break;
             case TECH:
-                path = frontendServerUrl + "/models/tech-radar/fdm?id=" + entityId;
+                path = frontendServerUrl + "/models/tech-radar?id=" + entityId;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown entity type: " + entityTypeEnum.getType());
