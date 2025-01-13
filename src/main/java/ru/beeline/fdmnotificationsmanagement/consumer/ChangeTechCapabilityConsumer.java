@@ -101,4 +101,66 @@ public class ChangeTechCapabilityConsumer {
             log.error("Internal server Error: " + e.getMessage());
         }
     }
+
+    @RabbitListener(queues = "${queue.notification.name}")
+    public void notificationQueue(String message) {
+        log.info("Received message: " + message);
+
+        JsonNode jsonNode;
+        try {
+            jsonNode = objectMapper.readTree(message);
+            if (!jsonNode.has("entity_id") || !jsonNode.has("change_type") || !jsonNode.has("entity_type")) {
+                log.error("Message does not match the required format: " + message);
+                throw new IllegalArgumentException("Message does not match the required format: " + message);
+            }
+        } catch (Exception e) {
+            log.error("Failed to parse message: " + e.getMessage());
+            return; // Удаляем сообщение из очереди без обработки
+        }
+
+        Integer entityId = jsonNode.get("entity_id").asInt();
+        String changeType = jsonNode.get("change_type").asText();
+        String entityType = jsonNode.get("entity_type").asText();
+        String name = jsonNode.has("name") ? jsonNode.get("name").asText() : null;
+
+        switch (entityType) {
+            case "BUSINESS_CAPABILITY":
+                handleBusinessCapabilityChange(entityId, changeType, name);
+                break;
+            case "TECH_CAPABILITY":
+                handleTechCapabilityChange(entityId, changeType, name);
+                break;
+            default:
+                capabilitySubscribeService.techQueueProcessor(entityId, name, changeType);
+                break;
+        }
+    }
+
+    private void handleBusinessCapabilityChange(Integer entityId, String changeType, String name) {
+        switch (changeType) {
+            case "UPDATE":
+                capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name);
+                break;
+            case "CREATE":
+                capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name);
+                break;
+            default:
+                log.error("Unsupported change type for BUSINESS_CAPABILITY: " + changeType);
+                break;
+        }
+    }
+
+    private void handleTechCapabilityChange(Integer entityId, String changeType, String name) {
+        switch (changeType) {
+            case "DELETE":
+                capabilitySubscribeService.updateSubscribeTechCapability(entityId, name);
+                break;
+            case "UPDATE":
+                capabilitySubscribeService.updateSubscribeTechCapability(entityId, name);
+                break;
+            case "CREATE":
+                capabilitySubscribeService.createSubscribeTechCapability(entityId, name);
+                break;
+        }
+    }
 }
