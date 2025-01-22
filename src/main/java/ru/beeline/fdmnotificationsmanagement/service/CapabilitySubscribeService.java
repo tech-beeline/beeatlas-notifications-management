@@ -58,14 +58,14 @@ public class CapabilitySubscribeService {
     @Autowired
     private UserService userService;
 
-    public void updateSubscribeBusinessCapability(Integer entityId, String name) {
+    public void updateSubscribeBusinessCapability(Integer entityId, String name, String changeType) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum, name);
+        updateSubscribe(entityId, entityTypeEnum, name, changeType);
     }
 
-    public void updateSubscribeTechCapability(Integer entityId, String entityName) {
+    public void updateSubscribeTechCapability(Integer entityId, String entityName, String changeType) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum, entityName);
+        updateSubscribe(entityId, entityTypeEnum, entityName, changeType);
     }
 
     public void createSubscribeTechCapability(Integer entityId, String entityName) {
@@ -92,7 +92,7 @@ public class CapabilitySubscribeService {
         }
     }
 
-    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName) {
+    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName, String changeType) {
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (entity != null) {
             log.info("entityID: " + entity.getId());
@@ -106,7 +106,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                            .changeType("UPDATE")
+                            .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);
                     Notify notify = Notify.builder()
