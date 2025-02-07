@@ -46,6 +46,7 @@ public class AuthSSOClient {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> responseMap = objectMapper.readValue(response.getBody(), Map.class);
+            log.info("token :{}", responseMap.get("access_token").toString());
             return responseMap.get("access_token").toString();
         } catch (Exception e) {
             throw new RuntimeException("Error while parsing response", e);
