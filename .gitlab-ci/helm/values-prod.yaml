@@ -13,6 +13,7 @@ env:
   INTEGRATION_CAPABILITY_SERVER_URL: "vault:eafdmmart/data/prod/fdm#capabilityserver"
   INTEGRATION_FRONTEND_SERVER_URL: "vault:eafdmmart/data/prod/fdm#frontendserver"
   INTEGRATION_AUTH_SERVER_URL: "vault:eafdmmart/data/prod/fdm#authserverurl"
+  INTEGRATION_AUTHSSO_SERVER_URL: "vault:eafdmmart/data/prod/ambassador#authsso"
 
 
 replicaCount: 1
