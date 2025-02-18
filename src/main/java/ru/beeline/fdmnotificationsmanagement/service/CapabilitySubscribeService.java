@@ -6,12 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenIdsDTO;
 import ru.beeline.fdmnotificationsmanagement.client.CapabilityClient;
-import ru.beeline.fdmnotificationsmanagement.domain.Entity;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.domain.Notify;
-import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
-import ru.beeline.fdmnotificationsmanagement.domain.User;
+import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
@@ -96,7 +91,7 @@ public class CapabilitySubscribeService {
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (entity != null) {
             log.info("entityID: " + entity.getId());
-            if (!entityName.equals(entity.getName())) {
+            if (!entityName.equals(entity.getName()) && entity.getName() != null) {
                 entity.setName(entityName);
                 entityService.save(entity);
             }

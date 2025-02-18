@@ -7,20 +7,24 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import ru.beeline.fdmnotificationsmanagement.domain.Entity;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.domain.Notify;
-import ru.beeline.fdmnotificationsmanagement.domain.User;
+import org.springframework.web.server.ResponseStatusException;
+import ru.beeline.fdmlib.dto.auth.EmailResponseDTO;
+import ru.beeline.fdmnotificationsmanagement.client.AuthClient;
+import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.NotifySpecifications;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
+import ru.beeline.fdmnotificationsmanagement.repository.BusinessEventEnumRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.BusinessNotifyRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.UserRepository;
 
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +40,18 @@ public class NotifyService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AuthClient authClient;
+
+    @Autowired
+    private BusinessEventEnumRepository businessEventEnumRepository;
+
+    @Autowired
+    private BusinessNotifyRepository businessNotifyRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     public List<Notify> saveAll(List<Notify> notifies) {
@@ -63,7 +79,7 @@ public class NotifyService {
                                            String type,
                                            Boolean wasNotify,
                                            Integer page) {
-        if(type!=null) {
+        if (type != null) {
             try {
                 EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
             } catch (Exception e) {
@@ -122,6 +138,32 @@ public class NotifyService {
             specification = specification.and(NotifySpecifications.hasEntityType(type));
         }
         return specification;
+    }
+
+    public void postNotify(Integer userId, String entityType, Integer entityId) {
+        User user = new User();
+        try {
+            EmailResponseDTO authResponse = authClient.getEmailByUserID(userId);
+            user.setUserId(userId);
+            user.setEmail(authResponse.getEmail());
+            user = userRepository.save(user);
+        } catch (Exception e) {
+            log.error("Ошибка при получении email из AuthClient: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Не удалось получить email пользователя");
+        }
+
+        BusinessEventEnum businessEventEnum = businessEventEnumRepository.findByName(entityType);
+        if (businessEventEnum == null) {
+            log.error("Тип события {} не найден", entityType);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Неверный тип события");
+        }
+        BusinessNotify businessNotify = new BusinessNotify();
+        businessNotify.setUser(user);
+        businessNotify.setEntityId(entityId);
+        businessNotify.setEntityType(businessEventEnum);
+        businessNotify.setWebNotify(false);
+        businessNotify.setCreatedDate(LocalDateTime.now());
+        businessNotifyRepository.save(businessNotify);
     }
 
     public void patchNotify(Integer userId, String notifyType, List<Integer> notifyIds) {

@@ -55,6 +55,9 @@ public class ChangeTechCapabilityConsumer {
 
     private void handleBusinessCapabilityChange(Integer entityId, String changeType, String name) {
         switch (changeType) {
+            case "DELETE":
+                capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name,changeType);
+                break;
             case "UPDATE":
                 capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name,changeType);
                 break;
