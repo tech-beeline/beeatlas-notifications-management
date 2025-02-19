@@ -48,10 +48,10 @@ public class NotifyController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PostMapping("/subscribe/{entityType}/{entity_id}")
+    @PostMapping("/business-event/{entity_type}/{entity_id}")
     @ApiOperation(value = "Создания записи о бизнес-нотификации")
     public ResponseEntity businessEvent(HttpServletRequest request,
-                                        @PathVariable(value = "entityType") String entityType,
+                                        @PathVariable(value = "entity_type") String entityType,
                                         @PathVariable(value = "entity_id") Integer entityId) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
         notifyService.postNotify(userId, entityType, entityId);
