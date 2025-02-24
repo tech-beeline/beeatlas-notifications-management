@@ -91,7 +91,7 @@ public class CapabilitySubscribeService {
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (entity != null) {
             log.info("entityID: " + entity.getId());
-            if (!entityName.equals(entity.getName()) && entity.getName() != null) {
+            if (!entityName.isEmpty() && !entityName.equals(entity.getName())) {
                 entity.setName(entityName);
                 entityService.save(entity);
             }
