@@ -13,7 +13,9 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.beeline.fdmlib.dto.auth.EmailResponseDTO;
 import ru.beeline.fdmnotificationsmanagement.client.AuthClient;
 import ru.beeline.fdmnotificationsmanagement.domain.*;
+import ru.beeline.fdmnotificationsmanagement.domain.specification.BusinessNotifySpecifications;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.NotifySpecifications;
+import ru.beeline.fdmnotificationsmanagement.dto.BusinessNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
@@ -197,5 +199,62 @@ public class NotifyService {
         if (!List.of("web", "email", "all").contains(notifyType)) {
             throw new BadRequestException("Передан неверный формат нотификаций");
         }
+    }
+
+    public Page<BusinessNotifyDTO> getBusinessNotify(Integer userId,
+                                                     LocalDateTime afterDate,
+                                                     LocalDateTime beforeDate,
+                                                     String type,
+                                                     Boolean wasNotify,
+                                                     Integer page) {
+        if (type != null) {
+            try {
+                EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
+            } catch (Exception e) {
+                throw new BadRequestException("400 Неверно указан тип сущности");
+            }
+        }
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20);
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
+        }
+        final Specification<BusinessNotify> specification = getBusinessNotifySpecification(afterDate, beforeDate,
+                type, wasNotify, user);
+
+        Page<BusinessNotify> notifyPage = businessNotifyRepository.findAll(specification, pageRequest);
+        if (!notifyPage.isEmpty()) {
+            List<BusinessNotifyDTO> result = notifyPage.stream().map(this::mapBusinessNotifyDTO).collect(Collectors.toList());
+            return new PageImpl<>(result, pageRequest, notifyPage.getTotalElements());
+        }
+        return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
+    }
+
+    private BusinessNotifyDTO mapBusinessNotifyDTO(BusinessNotify businessNotify) {
+        BusinessNotifyDTO businessNotifyDTO = new BusinessNotifyDTO();
+        businessNotifyDTO.setId(businessNotify.getId());
+        businessNotifyDTO.setWebNotify(businessNotify.getWebNotify());
+        businessNotifyDTO.setCreatedDate(businessNotify.getCreatedDate());
+        businessNotifyDTO.setEntityId(businessNotify.getEntityId());
+        businessNotifyDTO.setEntityTypeId(businessNotify.getEntityType());
+        return businessNotifyDTO;
+    }
+
+    private static Specification<BusinessNotify> getBusinessNotifySpecification(LocalDateTime afterDate, LocalDateTime beforeDate,
+                                                                                String type, Boolean wasNotify, User user) {
+        Specification<BusinessNotify> specification = Specification.where(BusinessNotifySpecifications.hasUserId(user.getId()));
+        if (wasNotify != null) {
+            specification = specification.and(BusinessNotifySpecifications.hasWebNotify(wasNotify));
+        }
+        if (afterDate != null) {
+            specification = specification.and(BusinessNotifySpecifications.hasChangeDateAfter(afterDate));
+        }
+        if (beforeDate != null) {
+            specification = specification.and(BusinessNotifySpecifications.hasChangeDateBefore(beforeDate));
+        }
+        if (type != null) {
+            specification = specification.and(BusinessNotifySpecifications.hasEntityType(type));
+        }
+        return specification;
     }
 }
