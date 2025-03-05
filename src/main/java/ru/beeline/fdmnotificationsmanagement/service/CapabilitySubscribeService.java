@@ -352,7 +352,10 @@ public class CapabilitySubscribeService {
         EntityTypeEnum techEntityTypeEnum = entityTypeEnumService.getTechEntityTypeEnum();
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
         if (entity != null) {
-            entity.setName(name);
+            log.info("entityID: " + entity.getId());
+            if (!name.isEmpty() && !name.equals(entity.getName())) {
+                entity.setName(name);
+            }
             List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
             if (!subscribes.isEmpty()) {
                 subscribes.forEach(subscribe -> {
