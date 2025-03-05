@@ -355,6 +355,7 @@ public class CapabilitySubscribeService {
             log.info("entityID: " + entity.getId());
             if (!name.isEmpty() && !name.equals(entity.getName())) {
                 entity.setName(name);
+                entityService.save(entity);
             }
             List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
             if (!subscribes.isEmpty()) {
