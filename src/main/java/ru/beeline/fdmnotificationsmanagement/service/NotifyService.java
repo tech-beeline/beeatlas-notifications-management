@@ -208,9 +208,8 @@ public class NotifyService {
                                                      Boolean wasNotify,
                                                      Integer page) {
         if (type != null) {
-            try {
-                EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
-            } catch (Exception e) {
+            BusinessEventEnum businessEventEnum = businessEventEnumRepository.findByName(type);
+            if (businessEventEnum == null) {
                 throw new BadRequestException("400 Неверно указан тип сущности");
             }
         }
@@ -242,7 +241,7 @@ public class NotifyService {
 
     private static Specification<BusinessNotify> getBusinessNotifySpecification(LocalDateTime afterDate, LocalDateTime beforeDate,
                                                                                 String type, Boolean wasNotify, User user) {
-        Specification<BusinessNotify> specification = Specification.where(BusinessNotifySpecifications.hasUserId(user.getId()));
+        Specification<BusinessNotify> specification = Specification.where(BusinessNotifySpecifications.hasUserId(user.getUserId()));
         if (wasNotify != null) {
             specification = specification.and(BusinessNotifySpecifications.hasWebNotify(wasNotify));
         }
