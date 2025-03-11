@@ -241,7 +241,7 @@ public class NotifyService {
 
     private static Specification<BusinessNotify> getBusinessNotifySpecification(LocalDateTime afterDate, LocalDateTime beforeDate,
                                                                                 String type, Boolean wasNotify, User user) {
-        Specification<BusinessNotify> specification = Specification.where(BusinessNotifySpecifications.hasUserId(user.getUserId()));
+        Specification<BusinessNotify> specification = Specification.where(BusinessNotifySpecifications.hasUserId(user.getId()));
         if (wasNotify != null) {
             specification = specification.and(BusinessNotifySpecifications.hasWebNotify(wasNotify));
         }
@@ -256,4 +256,5 @@ public class NotifyService {
         }
         return specification;
     }
+
 }
