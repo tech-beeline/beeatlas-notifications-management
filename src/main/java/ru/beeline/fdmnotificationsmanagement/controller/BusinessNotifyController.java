@@ -26,9 +26,9 @@ public class BusinessNotifyController {
     @ApiOperation(value = "Получения всех нотификаций о бизнес-событиях")
     public Page<BusinessNotifyDTO> getBusinessNotify(
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime afterDate,
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") LocalDateTime afterDate,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime beforeDate,
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") LocalDateTime beforeDate,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) Boolean wasNotify,
             @RequestParam(required = false) Integer page,
