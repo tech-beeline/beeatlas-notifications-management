@@ -30,7 +30,7 @@ public class NotifySpecifications {
     public static Specification<Notify> hasChangeDateBefore(Timestamp changeDate) {
         return (root, query, criteriaBuilder) -> {
             Join<Notify, EntityChange> changeEntityJoin = root.join("entityChange", JoinType.INNER);
-            return criteriaBuilder.lessThanOrEqualTo(changeEntityJoin.get("dateChange"), changeDate);
+            return criteriaBuilder.greaterThanOrEqualTo(changeEntityJoin.get("dateChange"), changeDate);
         };
     }
 

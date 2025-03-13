@@ -204,8 +204,8 @@ public class NotifyService {
     }
 
     public Page<BusinessNotifyDTO> getBusinessNotify(Integer userId,
-                                                     LocalDateTime afterDate,
-                                                     LocalDateTime beforeDate,
+                                                     Timestamp afterDate,
+                                                     Timestamp beforeDate,
                                                      String type,
                                                      Boolean wasNotify,
                                                      Integer page) {
@@ -220,9 +220,8 @@ public class NotifyService {
         if (user == null) {
             return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
         }
-        final Specification<BusinessNotify> specification = getBusinessNotifySpecification(afterDate, beforeDate,
-                type, wasNotify, user);
-
+        final Specification<BusinessNotify> specification = getBusinessNotifySpecification(afterDate == null ? null : afterDate.toLocalDateTime(),
+                beforeDate == null ? null : beforeDate.toLocalDateTime(), type, wasNotify, user);
         Page<BusinessNotify> notifyPage = businessNotifyRepository.findAll(specification, pageRequest);
         if (!notifyPage.isEmpty()) {
             List<BusinessNotifyDTO> result = notifyPage.stream().map(this::mapBusinessNotifyDTO).collect(Collectors.toList());
