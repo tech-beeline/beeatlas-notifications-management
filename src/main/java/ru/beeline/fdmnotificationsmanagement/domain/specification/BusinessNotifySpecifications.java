@@ -25,7 +25,7 @@ public class BusinessNotifySpecifications {
 
     public static Specification<BusinessNotify> hasChangeDateBefore(LocalDateTime changeDate) {
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), changeDate);
+                criteriaBuilder.greaterThanOrEqualTo(root.get("createdDate"), changeDate);
     }
 
     public static Specification<BusinessNotify> hasEntityType(String type) {

@@ -4,12 +4,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.beeline.fdmnotificationsmanagement.dto.BusinessNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.service.NotifyService;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 import static ru.beeline.fdmnotificationsmanagement.utils.Constant.USER_ID_HEADER;
 
@@ -25,10 +24,8 @@ public class BusinessNotifyController {
     @GetMapping("/business/notify")
     @ApiOperation(value = "Получения всех нотификаций о бизнес-событиях")
     public Page<BusinessNotifyDTO> getBusinessNotify(
-            @RequestParam(required = false)
-            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") LocalDateTime afterDate,
-            @RequestParam(required = false)
-            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS") LocalDateTime beforeDate,
+            @RequestParam(required = false) Timestamp afterDate,
+            @RequestParam(required = false) Timestamp beforeDate,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) Boolean wasNotify,
             @RequestParam(required = false) Integer page,
