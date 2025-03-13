@@ -143,17 +143,19 @@ public class NotifyService {
     }
 
     public void postNotify(Integer userId, String entityType, Integer entityId) {
-        User user = new User();
-        try {
-            EmailResponseDTO authResponse = authClient.getEmailByUserID(userId);
-            user.setUserId(userId);
-            user.setEmail(authResponse.getEmail());
-            user = userRepository.save(user);
-        } catch (Exception e) {
-            log.error("Ошибка при получении email из AuthClient: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Не удалось получить email пользователя");
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            user = new User();
+            try {
+                EmailResponseDTO authResponse = authClient.getEmailByUserID(userId);
+                user.setUserId(userId);
+                user.setEmail(authResponse.getEmail());
+                user = userRepository.save(user);
+            } catch (Exception e) {
+                log.error("Ошибка при получении email из AuthClient: {}", e.getMessage());
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Не удалось получить email пользователя");
+            }
         }
-
         BusinessEventEnum businessEventEnum = businessEventEnumRepository.findByName(entityType);
         if (businessEventEnum == null) {
             log.error("Тип события {} не найден", entityType);
