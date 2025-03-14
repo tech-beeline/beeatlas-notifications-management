@@ -26,7 +26,7 @@ public class ChangeTechCapabilityConsumer {
         JsonNode jsonNode;
         try {
             jsonNode = objectMapper.readTree(message);
-            if (!jsonNode.has("entity_id") || !jsonNode.has("change_type") || !jsonNode.has("entity_type")) {
+            if (!jsonNode.has("entityId") || !jsonNode.has("changeType") || !jsonNode.has("entityType")) {
                 log.error("Message does not match the required format: " + message);
                 throw new IllegalArgumentException("Message does not match the required format: " + message);
             }
@@ -35,9 +35,9 @@ public class ChangeTechCapabilityConsumer {
             return; // Удаляем сообщение из очереди без обработки
         }
 
-        Integer entityId = jsonNode.get("entity_id").asInt();
-        String changeType = jsonNode.get("change_type").asText();
-        String entityType = jsonNode.get("entity_type").asText();
+        Integer entityId = jsonNode.get("entityId").asInt();
+        String changeType = jsonNode.get("changeType").asText();
+        String entityType = jsonNode.get("entityType").asText();
         String name = jsonNode.has("name") ? jsonNode.get("name").asText() : "";
 
         switch (entityType) {
