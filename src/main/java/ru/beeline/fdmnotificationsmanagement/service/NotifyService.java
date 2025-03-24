@@ -30,6 +30,8 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -258,4 +260,20 @@ public class NotifyService {
         return specification;
     }
 
+    public void pathBusinessNotify(Integer userId, List<Integer> ids) {
+        User users = userRepository.findByUserId(userId);
+        if (users == null) {
+            throw new EntityNotFoundException("Запись с данным User Id не найдена");
+        }
+        for (Integer id : ids) {
+            Optional<BusinessNotify> optionalBusinessNotify = businessNotifyRepository.findById(id);
+            if (optionalBusinessNotify.isPresent()) {
+                BusinessNotify businessNotify = optionalBusinessNotify.get();
+                if (Objects.equals(businessNotify.getUser().getId(), users.getId())) {
+                    businessNotify.setWebNotify(true);
+                    businessNotifyRepository.save(businessNotify);
+                }
+            }
+        }
+    }
 }

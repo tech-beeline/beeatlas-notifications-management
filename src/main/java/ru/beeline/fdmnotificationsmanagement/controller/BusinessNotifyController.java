@@ -4,11 +4,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.beeline.fdmnotificationsmanagement.dto.BusinessNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.service.NotifyService;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import static ru.beeline.fdmnotificationsmanagement.utils.Constant.USER_ID_HEADER;
 
@@ -32,5 +35,13 @@ public class BusinessNotifyController {
             @RequestHeader(value = USER_ID_HEADER) Integer userId) {
 
         return notifyService.getBusinessNotify(userId, afterDate, beforeDate, type, wasNotify, page);
+    }
+
+    @PatchMapping("/business/notify")
+    @ApiOperation(value = "Обновления прочитанных уведомлений бизнес нотификаций")
+    public ResponseEntity pathBusinessNotify(@RequestHeader(value = USER_ID_HEADER) Integer userId,
+                                             @RequestBody List<Integer> ids) {
+        notifyService.pathBusinessNotify(userId, ids);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
