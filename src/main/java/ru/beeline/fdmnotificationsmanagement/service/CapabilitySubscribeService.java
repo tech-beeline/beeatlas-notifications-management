@@ -65,29 +65,33 @@ public class CapabilitySubscribeService {
 
     public void createSubscribeTechCapability(Integer entityId, String entityName) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getTechCapabilityParents(entityId);
-        log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
-        Entity entity = entityRepository.findByEntityIdAndEntityType(entityId,
-                entityTypeEnumService.getTechCapabilityEntityTypeEnum());
-        if (capabilityParentDTO != null && entity == null) {
-            createSubscribe(entityId,
-                    capabilityParentDTO,
-                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
-                    entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
-                    entityName);
+        if (capabilityParentDTO != null) {
+            log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
+            Entity entity = entityRepository.findByEntityIdAndEntityType(entityId,
+                    entityTypeEnumService.getTechCapabilityEntityTypeEnum());
+            if (capabilityParentDTO != null && entity == null) {
+                createSubscribe(entityId,
+                        capabilityParentDTO,
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
+                        entityName);
+            }
         }
     }
 
     public void createSubscribeBusinessCapability(Integer entityId, String entityName) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
-        log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
-        Entity entity = entityRepository.findByEntityIdAndEntityType(entityId,
-                entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
-        if (capabilityParentDTO != null && entity == null) {
-            createSubscribe(entityId,
-                    capabilityParentDTO,
-                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
-                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
-                    entityName);
+        if (capabilityParentDTO != null) {
+            log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
+            Entity entity = entityRepository.findByEntityIdAndEntityType(entityId,
+                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
+            if (capabilityParentDTO != null && entity == null) {
+                createSubscribe(entityId,
+                        capabilityParentDTO,
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityName);
+            }
         }
     }
 

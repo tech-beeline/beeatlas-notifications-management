@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenIdsDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
@@ -38,11 +39,15 @@ public class CapabilityClient {
                 log.error("Parents not found for entityId = " + entityId);
             }
             return result;
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error(e.getMessage());
+            return null;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new ServerNotFoundException(e.getMessage());
         }
     }
+
     public CapabilityParentDTO getBusinessCapabilityParents(Integer entityId) {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -56,6 +61,9 @@ public class CapabilityClient {
                 log.error("Parents not found for entityId = " + entityId);
             }
             return result;
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error(e.getMessage());
+            return null;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new ServerNotFoundException(e.getMessage());
@@ -70,7 +78,7 @@ public class CapabilityClient {
             headers.add("SOURCE", "Sparx");
 
             HttpEntity<?> entity = new HttpEntity<>(headers);
-            return restTemplate.exchange(capabilityServerUrl + "/api/v1/business-capability/" + id +"/children/all",
+            return restTemplate.exchange(capabilityServerUrl + "/api/v1/business-capability/" + id + "/children/all",
                     HttpMethod.GET, entity, BusinessCapabilityChildrenIdsDTO.class).getBody();
         } catch (Exception e) {
             log.error(e.getMessage());
