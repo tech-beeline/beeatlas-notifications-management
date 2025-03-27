@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -226,7 +227,10 @@ public class NotifyService {
                 beforeDate == null ? null : beforeDate.toLocalDateTime(), type, wasNotify, user);
         Page<BusinessNotify> notifyPage = businessNotifyRepository.findAll(specification, pageRequest);
         if (!notifyPage.isEmpty()) {
-            List<BusinessNotifyDTO> result = notifyPage.stream().map(this::mapBusinessNotifyDTO).collect(Collectors.toList());
+            List<BusinessNotifyDTO> result = notifyPage.stream()
+                    .map(this::mapBusinessNotifyDTO)
+                    .sorted(Comparator.comparing(BusinessNotifyDTO::getCreatedDate).reversed())
+                    .collect(Collectors.toList());
             return new PageImpl<>(result, pageRequest, notifyPage.getTotalElements());
         }
         return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
