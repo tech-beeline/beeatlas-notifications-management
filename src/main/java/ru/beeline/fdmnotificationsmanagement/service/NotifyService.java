@@ -29,7 +29,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -218,18 +217,21 @@ public class NotifyService {
                 throw new BadRequestException("400 Неверно указан тип сущности");
             }
         }
-        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20);
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20,
+                Sort.by(Sort.Order.desc("createdDate"), Sort.Order.asc("id")));
         User user = userService.findByUserId(userId);
         if (user == null) {
             return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
         }
-        final Specification<BusinessNotify> specification = getBusinessNotifySpecification(afterDate == null ? null : afterDate.toLocalDateTime(),
-                beforeDate == null ? null : beforeDate.toLocalDateTime(), type, wasNotify, user);
+        final Specification<BusinessNotify> specification = getBusinessNotifySpecification(
+                afterDate == null ? null : afterDate.toLocalDateTime(),
+                beforeDate == null ? null : beforeDate.toLocalDateTime(),
+                type, wasNotify, user
+        );
         Page<BusinessNotify> notifyPage = businessNotifyRepository.findAll(specification, pageRequest);
         if (!notifyPage.isEmpty()) {
             List<BusinessNotifyDTO> result = notifyPage.stream()
                     .map(this::mapBusinessNotifyDTO)
-                    .sorted(Comparator.comparing(BusinessNotifyDTO::getCreatedDate).reversed())
                     .collect(Collectors.toList());
             return new PageImpl<>(result, pageRequest, notifyPage.getTotalElements());
         }

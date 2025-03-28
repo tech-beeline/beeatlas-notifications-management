@@ -24,8 +24,9 @@ public class BusinessNotifySpecifications {
     }
 
     public static Specification<BusinessNotify> hasChangeDateBefore(LocalDateTime changeDate) {
+        LocalDateTime endOfDay = changeDate.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), changeDate);
+                criteriaBuilder.lessThanOrEqualTo(root.get("createdDate"), endOfDay);
     }
 
     public static Specification<BusinessNotify> hasEntityType(String type) {
