@@ -1,5 +1,6 @@
 package ru.beeline.fdmnotificationsmanagement.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import java.sql.Timestamp;
 public class UnreadNotifyDTO {
     private Integer id;
     private Boolean webNotify;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp changeDate;
     private Integer entityId;
     private String changeType;
