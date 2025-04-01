@@ -19,6 +19,89 @@ public class ChangeTechCapabilityConsumer {
     CapabilitySubscribeService capabilitySubscribeService;
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    @RabbitListener(queues = "${queue.tech-queue.name}")
+    public void techQueue(String message) {
+        log.info("Received from tech_queue: " + message, new String(message.getBytes()));
+        try {
+            JsonNode jsonArray = objectMapper.readTree(message);
+            if (jsonArray.isArray()) {
+                for (JsonNode jsonNode : jsonArray) {
+                    if (jsonNode.has("entity_id")
+                            && jsonNode.has("change_type")
+                            && jsonNode.has("name")) {
+                        capabilitySubscribeService.techQueueProcessor(
+                                jsonNode.get("entity_id").asInt(),
+                                jsonNode.get("name").asText(),
+                                jsonNode.get("change_type").asText()
+                        );
+                    } else {
+                        log.error("Message does not match the required format");
+                    }
+                }
+            } else {
+                log.error("Message is not an array");
+            }
+        } catch (Exception e) {
+            log.error("Internal server Error: " + e.getMessage());
+        }
+    }
+
+    @RabbitListener(queues = "${queue.change-tech-capability.name}")
+    public void changeTechCapabilityQueue(String message) {
+        log.info("Received from change-tech-capability: " + message, new String(message.getBytes()));
+        try {
+            JsonNode jsonNode = objectMapper.readTree(message);
+            if (jsonNode.has("entity_id")
+                    && jsonNode.has("change_type")
+                    && jsonNode.has("name")) {
+                String changeType = jsonNode.get("change_type").asText();
+                String name = jsonNode.get("name").asText();
+                Integer entityId = jsonNode.get("entity_id").asInt();
+
+                switch (changeType) {
+                    case "UPDATE":
+                        capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType);
+                        break;
+                    case "CREATE":
+                        capabilitySubscribeService.createSubscribeTechCapability(entityId, name);
+                        break;
+                }
+            } else {
+                log.error("Message does not match the required format");
+            }
+        } catch (Exception e) {
+            log.error("Internal server Error: " + e.getMessage());
+        }
+    }
+
+    @RabbitListener(queues = "${queue.change-business-capability.name}")
+    public void changeBusinessCapabilityQueue(String message) {
+        log.info("Received from change-business-capability: " + message, new String(message.getBytes()));
+        try {
+            JsonNode jsonNode = objectMapper.readTree(message);
+            if (jsonNode.has("entity_id")
+                    && jsonNode.has("change_type")
+                    && jsonNode.has("name")) {
+                String changeType = jsonNode.get("change_type").asText();
+                String name = jsonNode.get("name").asText();
+                Integer entityId = jsonNode.get("entity_id").asInt();
+
+                switch (changeType) {
+                    case "UPDATE":
+                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name, changeType);
+                        break;
+                    case "CREATE":
+                        capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name);
+                        break;
+                }
+            } else {
+                log.error("Message does not match the required format");
+            }
+        } catch (Exception e) {
+            log.error("Internal server Error: " + e.getMessage());
+        }
+    }
+
     @RabbitListener(queues = "${queue.notification.name}")
     public void notificationQueue(String message) {
         log.info("Received message: " + message);

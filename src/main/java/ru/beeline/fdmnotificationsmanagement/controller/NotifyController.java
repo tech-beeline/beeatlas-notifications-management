@@ -57,5 +57,4 @@ public class NotifyController {
         notifyService.postNotify(userId, entityType, entityId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
 }
