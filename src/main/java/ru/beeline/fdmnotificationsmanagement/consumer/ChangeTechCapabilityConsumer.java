@@ -60,7 +60,7 @@ public class ChangeTechCapabilityConsumer {
 
                 switch (changeType) {
                     case "UPDATE":
-                        capabilitySubscribeService.updateSubscribeTechCapability(entityId, name);
+                        capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType);
                         break;
                     case "CREATE":
                         capabilitySubscribeService.createSubscribeTechCapability(entityId, name);
@@ -88,7 +88,7 @@ public class ChangeTechCapabilityConsumer {
 
                 switch (changeType) {
                     case "UPDATE":
-                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name);
+                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name, changeType);
                         break;
                     case "CREATE":
                         capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name);
@@ -99,6 +99,71 @@ public class ChangeTechCapabilityConsumer {
             }
         } catch (Exception e) {
             log.error("Internal server Error: " + e.getMessage());
+        }
+    }
+
+    @RabbitListener(queues = "${queue.notification.name}")
+    public void notificationQueue(String message) {
+        log.info("Received message: " + message);
+
+        JsonNode jsonNode;
+        try {
+            jsonNode = objectMapper.readTree(message);
+            if (!jsonNode.has("entityId") || !jsonNode.has("changeType") || !jsonNode.has("entityType")) {
+                log.error("Message does not match the required format: " + message);
+                throw new IllegalArgumentException("Message does not match the required format: " + message);
+            }
+        } catch (Exception e) {
+            log.error("Failed to parse message: " + e.getMessage());
+            return; // Удаляем сообщение из очереди без обработки
+        }
+
+        Integer entityId = jsonNode.get("entityId").asInt();
+        String changeType = jsonNode.get("changeType").asText();
+        String entityType = jsonNode.get("entityType").asText();
+        String name = jsonNode.has("name") ? jsonNode.get("name").asText() : "";
+
+        switch (entityType) {
+            case "BUSINESS_CAPABILITY":
+                handleBusinessCapabilityChange(entityId, changeType, name);
+                break;
+            case "TECH_CAPABILITY":
+                handleTechCapabilityChange(entityId, changeType, name);
+                break;
+            default:
+                capabilitySubscribeService.techQueueProcessor(entityId, name, changeType);
+                break;
+        }
+    }
+
+    private void handleBusinessCapabilityChange(Integer entityId, String changeType, String name) {
+        switch (changeType) {
+            case "DELETE":
+                capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name,changeType);
+                break;
+            case "UPDATE":
+                capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name,changeType);
+                break;
+            case "CREATE":
+                capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name);
+                break;
+            default:
+                log.error("Unsupported change type for BUSINESS_CAPABILITY: " + changeType);
+                break;
+        }
+    }
+
+    private void handleTechCapabilityChange(Integer entityId, String changeType, String name) {
+        switch (changeType) {
+            case "DELETE":
+                capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType);
+                break;
+            case "UPDATE":
+                capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType);
+                break;
+            case "CREATE":
+                capabilitySubscribeService.createSubscribeTechCapability(entityId, name);
+                break;
         }
     }
 }

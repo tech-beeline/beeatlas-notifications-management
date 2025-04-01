@@ -6,13 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.service.NotifyService;
 
@@ -54,4 +48,13 @@ public class NotifyController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @PostMapping("/business-event/{entity_type}/{entity_id}")
+    @ApiOperation(value = "Создания записи о бизнес-нотификации")
+    public ResponseEntity businessEvent(HttpServletRequest request,
+                                        @PathVariable(value = "entity_type") String entityType,
+                                        @PathVariable(value = "entity_id") Integer entityId) {
+        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
+        notifyService.postNotify(userId, entityType, entityId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }

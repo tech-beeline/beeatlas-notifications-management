@@ -2,13 +2,17 @@ package ru.beeline.fdmnotificationsmanagement.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.amqp.support.converter.SimpleMessageConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.beeline.fdmnotificationsmanagement.client.AuthSSOClient;
 
 @Configuration
 public class RabbitConfig {
@@ -34,6 +38,9 @@ public class RabbitConfig {
     @Value("${spring.rabbitmq.host}")
     private String connectFactoryName;
 
+    @Autowired
+    private AuthSSOClient authSSOClient;
+
     @Bean
     public Queue queue() {
         return new Queue(queueName, true);
@@ -48,13 +55,29 @@ public class RabbitConfig {
         return BindingBuilder.bind(queue).to(directExchange).with(routingName);
     }
 
+
     @Bean
     public CachingConnectionFactory connectionFactory() {
-        CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(connectFactoryName);
-        cachingConnectionFactory.setUsername(userName);
-        cachingConnectionFactory.setPassword(password);
-        cachingConnectionFactory.setVirtualHost(virtualHost);
-        return cachingConnectionFactory;
+        return createConnectionFactoryWithToken();
+    }
+
+    private CachingConnectionFactory createConnectionFactoryWithToken() {
+        CachingConnectionFactory factory = new CachingConnectionFactory(connectFactoryName);
+        factory.setUsername("");
+        factory.setPassword(authSSOClient.getToken());
+        factory.setVirtualHost(virtualHost);
+
+        factory.addConnectionListener(new ConnectionListener() {
+            @Override
+            public void onCreate(Connection connection) {
+                factory.setPassword(authSSOClient.getToken());
+            }
+
+            @Override
+            public void onClose(Connection connection) {
+            }
+        });
+        return factory;
     }
 
     @Bean

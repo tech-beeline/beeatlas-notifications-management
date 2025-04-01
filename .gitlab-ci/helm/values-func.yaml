@@ -14,6 +14,7 @@ env:
   INTEGRATION_CAPABILITY_SERVER_URL: "vault:eafdmmart/data/test/func/fdm#capabilityserver"
   INTEGRATION_FRONTEND_SERVER_URL: "vault:eafdmmart/data/test/func/fdm#frontendserver"
   INTEGRATION_AUTH_SERVER_URL: "vault:eafdmmart/data/test/func/fdm#authserverurl"
+  INTEGRATION_AUTHSSO_SERVER_URL: "vault:eafdmmart/data/test/func/ambassador#authsso"
 
 ingress:
   annotations:

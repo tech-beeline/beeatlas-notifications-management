@@ -6,12 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenIdsDTO;
 import ru.beeline.fdmnotificationsmanagement.client.CapabilityClient;
-import ru.beeline.fdmnotificationsmanagement.domain.Entity;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.domain.Notify;
-import ru.beeline.fdmnotificationsmanagement.domain.Subscribe;
-import ru.beeline.fdmnotificationsmanagement.domain.User;
+import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
@@ -58,45 +53,53 @@ public class CapabilitySubscribeService {
     @Autowired
     private UserService userService;
 
-    public void updateSubscribeBusinessCapability(Integer entityId, String name) {
+    public void updateSubscribeBusinessCapability(Integer entityId, String name, String changeType) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum, name);
+        updateSubscribe(entityId, entityTypeEnum, name, changeType);
     }
 
-    public void updateSubscribeTechCapability(Integer entityId, String entityName) {
+    public void updateSubscribeTechCapability(Integer entityId, String entityName, String changeType) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum, entityName);
+        updateSubscribe(entityId, entityTypeEnum, entityName, changeType);
     }
 
     public void createSubscribeTechCapability(Integer entityId, String entityName) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getTechCapabilityParents(entityId);
-        log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
         if (capabilityParentDTO != null) {
-            createSubscribe(entityId,
-                    capabilityParentDTO,
-                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
-                    entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
-                    entityName);
+            log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
+            Entity entity = entityRepository.findByEntityIdAndEntityType(entityId,
+                    entityTypeEnumService.getTechCapabilityEntityTypeEnum());
+            if (capabilityParentDTO != null && entity == null) {
+                createSubscribe(entityId,
+                        capabilityParentDTO,
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
+                        entityName);
+            }
         }
     }
 
     public void createSubscribeBusinessCapability(Integer entityId, String entityName) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
-        log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
         if (capabilityParentDTO != null) {
-            createSubscribe(entityId,
-                    capabilityParentDTO,
-                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
-                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
-                    entityName);
+            log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
+            Entity entity = entityRepository.findByEntityIdAndEntityType(entityId,
+                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
+            if (capabilityParentDTO != null && entity == null) {
+                createSubscribe(entityId,
+                        capabilityParentDTO,
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityName);
+            }
         }
     }
 
-    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName) {
+    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName, String changeType) {
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (entity != null) {
             log.info("entityID: " + entity.getId());
-            if (!entityName.equals(entity.getName())) {
+            if (!entityName.isEmpty() && !entityName.equals(entity.getName())) {
                 entity.setName(entityName);
                 entityService.save(entity);
             }
@@ -106,7 +109,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                            .changeType("UPDATE")
+                            .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);
                     Notify notify = Notify.builder()
@@ -357,7 +360,11 @@ public class CapabilitySubscribeService {
         EntityTypeEnum techEntityTypeEnum = entityTypeEnumService.getTechEntityTypeEnum();
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
         if (entity != null) {
-            entity.setName(name);
+            log.info("entityID: " + entity.getId());
+            if (!name.isEmpty() && !name.equals(entity.getName())) {
+                entity.setName(name);
+                entityService.save(entity);
+            }
             List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
             if (!subscribes.isEmpty()) {
                 subscribes.forEach(subscribe -> {
@@ -397,7 +404,7 @@ public class CapabilitySubscribeService {
                 path = frontendServerUrl + "/models/fdm?id=" + entityId + "&type=BUSINESS";
                 break;
             case TECH:
-                path = frontendServerUrl + "/models/tech-radar";
+                path = frontendServerUrl + "/models/tech-radar?id=" + entityId;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown entity type: " + entityTypeEnum.getType());

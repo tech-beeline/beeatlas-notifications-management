@@ -7,23 +7,31 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import ru.beeline.fdmnotificationsmanagement.domain.Entity;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityChange;
-import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
-import ru.beeline.fdmnotificationsmanagement.domain.Notify;
-import ru.beeline.fdmnotificationsmanagement.domain.User;
+import org.springframework.web.server.ResponseStatusException;
+import ru.beeline.fdmlib.dto.auth.EmailResponseDTO;
+import ru.beeline.fdmnotificationsmanagement.client.AuthClient;
+import ru.beeline.fdmnotificationsmanagement.domain.*;
+import ru.beeline.fdmnotificationsmanagement.domain.specification.BusinessNotifySpecifications;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.NotifySpecifications;
+import ru.beeline.fdmnotificationsmanagement.dto.BusinessNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
+import ru.beeline.fdmnotificationsmanagement.repository.BusinessEventEnumRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.BusinessNotifyRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.UserRepository;
 
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,6 +44,18 @@ public class NotifyService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AuthClient authClient;
+
+    @Autowired
+    private BusinessEventEnumRepository businessEventEnumRepository;
+
+    @Autowired
+    private BusinessNotifyRepository businessNotifyRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     public List<Notify> saveAll(List<Notify> notifies) {
@@ -63,7 +83,7 @@ public class NotifyService {
                                            String type,
                                            Boolean wasNotify,
                                            Integer page) {
-        if(type!=null) {
+        if (type != null) {
             try {
                 EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
             } catch (Exception e) {
@@ -124,6 +144,34 @@ public class NotifyService {
         return specification;
     }
 
+    public void postNotify(Integer userId, String entityType, Integer entityId) {
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            user = new User();
+            try {
+                EmailResponseDTO authResponse = authClient.getEmailByUserID(userId);
+                user.setUserId(userId);
+                user.setEmail(authResponse.getEmail());
+                user = userRepository.save(user);
+            } catch (Exception e) {
+                log.error("Ошибка при получении email из AuthClient: {}", e.getMessage());
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Не удалось получить email пользователя");
+            }
+        }
+        BusinessEventEnum businessEventEnum = businessEventEnumRepository.findByName(entityType);
+        if (businessEventEnum == null) {
+            log.error("Тип события {} не найден", entityType);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Неверный тип события");
+        }
+        BusinessNotify businessNotify = new BusinessNotify();
+        businessNotify.setUser(user);
+        businessNotify.setEntityId(entityId);
+        businessNotify.setEntityType(businessEventEnum);
+        businessNotify.setWebNotify(false);
+        businessNotify.setCreatedDate(LocalDateTime.now());
+        businessNotifyRepository.save(businessNotify);
+    }
+
     public void patchNotify(Integer userId, String notifyType, List<Integer> notifyIds) {
         User user = userService.findByUserId(userId);
         if (user == null) {
@@ -154,6 +202,84 @@ public class NotifyService {
     private void validateNotifyType(String notifyType) {
         if (!List.of("web", "email", "all").contains(notifyType)) {
             throw new BadRequestException("Передан неверный формат нотификаций");
+        }
+    }
+
+    public Page<BusinessNotifyDTO> getBusinessNotify(Integer userId,
+                                                     Timestamp afterDate,
+                                                     Timestamp beforeDate,
+                                                     String type,
+                                                     Boolean wasNotify,
+                                                     Integer page) {
+        if (type != null) {
+            BusinessEventEnum businessEventEnum = businessEventEnumRepository.findByName(type);
+            if (businessEventEnum == null) {
+                throw new BadRequestException("400 Неверно указан тип сущности");
+            }
+        }
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20,
+                Sort.by(Sort.Order.desc("createdDate"), Sort.Order.asc("id")));
+        User user = userService.findByUserId(userId);
+        if (user == null) {
+            return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
+        }
+        final Specification<BusinessNotify> specification = getBusinessNotifySpecification(
+                afterDate == null ? null : afterDate.toLocalDateTime(),
+                beforeDate == null ? null : beforeDate.toLocalDateTime(),
+                type, wasNotify, user
+        );
+        Page<BusinessNotify> notifyPage = businessNotifyRepository.findAll(specification, pageRequest);
+        if (!notifyPage.isEmpty()) {
+            List<BusinessNotifyDTO> result = notifyPage.stream()
+                    .map(this::mapBusinessNotifyDTO)
+                    .collect(Collectors.toList());
+            return new PageImpl<>(result, pageRequest, notifyPage.getTotalElements());
+        }
+        return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
+    }
+
+    private BusinessNotifyDTO mapBusinessNotifyDTO(BusinessNotify businessNotify) {
+        BusinessNotifyDTO businessNotifyDTO = new BusinessNotifyDTO();
+        businessNotifyDTO.setId(businessNotify.getId());
+        businessNotifyDTO.setWebNotify(businessNotify.getWebNotify());
+        businessNotifyDTO.setCreatedDate(businessNotify.getCreatedDate());
+        businessNotifyDTO.setEntityId(businessNotify.getEntityId());
+        businessNotifyDTO.setEntityTypeId(businessNotify.getEntityType());
+        return businessNotifyDTO;
+    }
+
+    private static Specification<BusinessNotify> getBusinessNotifySpecification(LocalDateTime afterDate, LocalDateTime beforeDate,
+                                                                                String type, Boolean wasNotify, User user) {
+        Specification<BusinessNotify> specification = Specification.where(BusinessNotifySpecifications.hasUserId(user.getId()));
+        if (wasNotify != null) {
+            specification = specification.and(BusinessNotifySpecifications.hasWebNotify(wasNotify));
+        }
+        if (afterDate != null) {
+            specification = specification.and(BusinessNotifySpecifications.hasChangeDateAfter(afterDate));
+        }
+        if (beforeDate != null) {
+            specification = specification.and(BusinessNotifySpecifications.hasChangeDateBefore(beforeDate));
+        }
+        if (type != null) {
+            specification = specification.and(BusinessNotifySpecifications.hasEntityType(type));
+        }
+        return specification;
+    }
+
+    public void pathBusinessNotify(Integer userId, List<Integer> ids) {
+        User users = userRepository.findByUserId(userId);
+        if (users == null) {
+            throw new EntityNotFoundException("Запись с данным User Id не найдена");
+        }
+        for (Integer id : ids) {
+            Optional<BusinessNotify> optionalBusinessNotify = businessNotifyRepository.findById(id);
+            if (optionalBusinessNotify.isPresent()) {
+                BusinessNotify businessNotify = optionalBusinessNotify.get();
+                if (Objects.equals(businessNotify.getUser().getId(), users.getId())) {
+                    businessNotify.setWebNotify(true);
+                    businessNotifyRepository.save(businessNotify);
+                }
+            }
         }
     }
 }
