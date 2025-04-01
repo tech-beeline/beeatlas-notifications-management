@@ -10,7 +10,6 @@ import ru.beeline.fdmnotificationsmanagement.domain.Notify;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public class NotifySpecifications {
@@ -32,10 +31,7 @@ public class NotifySpecifications {
     public static Specification<Notify> hasChangeDateBefore(Timestamp changeDate) {
         return (root, query, criteriaBuilder) -> {
             Join<Notify, EntityChange> changeEntityJoin = root.join("entityChange", JoinType.INNER);
-            LocalDateTime dateTime = changeDate.toLocalDateTime();
-            Timestamp adjustedChangeDate = dateTime.toLocalTime().equals(LocalTime.MIN)
-                    ? Timestamp.valueOf(dateTime.with(LocalTime.MAX))
-                    : changeDate;
+            Timestamp adjustedChangeDate = Timestamp.valueOf(changeDate.toLocalDateTime().with(LocalTime.MAX));
             return criteriaBuilder.lessThanOrEqualTo(changeEntityJoin.get("dateChange"), adjustedChangeDate);
         };
     }
