@@ -39,7 +39,7 @@ public class HeaderInterceptor implements HandlerInterceptor {
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
                 String headerValue = request.getHeader(headerName);
-                System.out.println(headerName + ": " + headerValue);
+                logger.debug(headerName + ": " + headerValue);
             }
             logger.info(USER_ID_HEADER + request.getHeader(USER_ID_HEADER));
             headers.put(USER_ID_HEADER, request.getHeader(USER_ID_HEADER).toString());
