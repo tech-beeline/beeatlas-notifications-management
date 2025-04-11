@@ -57,4 +57,14 @@ public class NotifyController {
         notifyService.postNotify(userId, entityType, entityId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @PostMapping("/api/v1//notify/business-event/group/role/{role}/{entity_type}/{entity_id}")
+    @ApiOperation(value = "Создания записи о бизнес-нотификации для групп пользователей")
+    public ResponseEntity businessEvent(HttpServletRequest request,
+                                        @PathVariable String role,
+                                        @PathVariable(value = "entity_type") String entityType,
+                                        @PathVariable(value = "entity_id") Integer entityId) {
+        notifyService.postGroupNotify(entityType, entityId, role);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }

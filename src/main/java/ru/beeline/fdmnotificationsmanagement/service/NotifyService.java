@@ -8,9 +8,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.beeline.fdmlib.dto.auth.EmailResponseDTO;
+import ru.beeline.fdmlib.dto.auth.UserProfileShortDTO;
 import ru.beeline.fdmnotificationsmanagement.client.AuthClient;
 import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.BusinessNotifySpecifications;
@@ -142,6 +144,17 @@ public class NotifyService {
             specification = specification.and(NotifySpecifications.hasEntityType(type));
         }
         return specification;
+    }
+
+    public void postGroupNotify(String entityType, Integer entityId, String role) {
+
+        List<UserProfileShortDTO> profiles = authClient.getUserProfilesByRole(role);
+
+        if (profiles == null || profiles.isEmpty()) {
+            throw new BadRequestException("Нет получателей для нотификаций");
+        }
+
+        profiles.forEach(profile-> postNotify(profile.getId(), entityType, entityId));
     }
 
     public void postNotify(Integer userId, String entityType, Integer entityId) {
