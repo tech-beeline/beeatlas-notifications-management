@@ -121,7 +121,7 @@ public class ChangeTechCapabilityConsumer {
         Integer entityId = jsonNode.get("entityId").asInt();
         String changeType = jsonNode.get("changeType").asText();
         String entityType = jsonNode.get("entityType").asText();
-        String name = jsonNode.has("name") ? jsonNode.get("name").asText() : "";
+        String name = jsonNode.has("name") ? jsonNode.get("name").asText() : null;
 
         switch (entityType) {
             case "BUSINESS_CAPABILITY":

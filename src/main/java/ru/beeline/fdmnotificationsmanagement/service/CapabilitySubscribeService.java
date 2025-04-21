@@ -99,9 +99,11 @@ public class CapabilitySubscribeService {
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (entity != null) {
             log.info("entityID: " + entity.getId());
-            if (!entityName.isEmpty() && !entityName.equals(entity.getName())) {
-                entity.setName(entityName);
-                entityService.save(entity);
+            if (entityName != null) {
+                if (!entityName.isEmpty() && !entityName.equals(entity.getName())) {
+                    entity.setName(entityName);
+                    entityService.save(entity);
+                }
             }
             List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
             if (!subscribes.isEmpty()) {
@@ -361,9 +363,11 @@ public class CapabilitySubscribeService {
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
         if (entity != null) {
             log.info("entityID: " + entity.getId());
-            if (!name.isEmpty() && !name.equals(entity.getName())) {
-                entity.setName(name);
-                entityService.save(entity);
+            if (name != null) {
+                if (!name.isEmpty() && !name.equals(entity.getName())) {
+                    entity.setName(name);
+                    entityService.save(entity);
+                }
             }
             List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
             if (!subscribes.isEmpty()) {
