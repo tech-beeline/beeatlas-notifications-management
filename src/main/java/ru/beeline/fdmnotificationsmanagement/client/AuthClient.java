@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.beeline.fdmlib.dto.auth.EmailResponseDTO;
 import ru.beeline.fdmlib.dto.auth.UserProfileShortDTO;
+import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.ForbiddenException;
 
 import java.util.List;
@@ -55,7 +56,7 @@ public class AuthClient {
                     HttpMethod.GET, entity, new ParameterizedTypeReference<List<UserProfileShortDTO>>() {}).getBody();
         } catch (Exception e) {
             log.error(e.getMessage());
-            throw new ForbiddenException("FORBIDDEN");
+            throw new BadRequestException("Нет получателей для нотификаций");
         }
         return profiles;
     }
