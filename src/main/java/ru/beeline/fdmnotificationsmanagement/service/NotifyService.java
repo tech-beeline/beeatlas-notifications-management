@@ -21,6 +21,7 @@ import ru.beeline.fdmnotificationsmanagement.dto.BusinessNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
+import ru.beeline.fdmnotificationsmanagement.exception.ForbiddenException;
 import ru.beeline.fdmnotificationsmanagement.repository.BusinessEventEnumRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.BusinessNotifyRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
@@ -168,13 +169,13 @@ public class NotifyService {
                 user = userRepository.save(user);
             } catch (Exception e) {
                 log.error("Ошибка при получении email из AuthClient: {}", e.getMessage());
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Не удалось получить email пользователя");
+                throw new ForbiddenException("Не удалось получить email пользователя");
             }
         }
         BusinessEventEnum businessEventEnum = businessEventEnumRepository.findByName(entityType);
         if (businessEventEnum == null) {
             log.error("Тип события {} не найден", entityType);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Неверный тип события");
+            throw new BadRequestException("Неверный тип события");
         }
         BusinessNotify businessNotify = new BusinessNotify();
         businessNotify.setUser(user);
