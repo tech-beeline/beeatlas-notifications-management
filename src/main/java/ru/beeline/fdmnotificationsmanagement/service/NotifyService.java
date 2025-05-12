@@ -184,6 +184,8 @@ public class NotifyService {
         businessNotify.setWebNotify(false);
         businessNotify.setCreatedDate(LocalDateTime.now());
         businessNotifyRepository.save(businessNotify);
+        log.info(businessNotify.toString() + "saved");
+        log.info("method postNotify completed ");
     }
 
     public void patchNotify(Integer userId, String notifyType, List<Integer> notifyIds) {
