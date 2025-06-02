@@ -8,9 +8,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.beeline.fdmlib.dto.auth.EmailResponseDTO;
+import ru.beeline.fdmlib.dto.auth.UserProfileShortDTO;
 import ru.beeline.fdmnotificationsmanagement.client.AuthClient;
 import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.BusinessNotifySpecifications;
@@ -19,6 +21,7 @@ import ru.beeline.fdmnotificationsmanagement.dto.BusinessNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
+import ru.beeline.fdmnotificationsmanagement.exception.ForbiddenException;
 import ru.beeline.fdmnotificationsmanagement.repository.BusinessEventEnumRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.BusinessNotifyRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
@@ -144,6 +147,17 @@ public class NotifyService {
         return specification;
     }
 
+    public void postGroupNotify(String entityType, Integer entityId, String role) {
+
+        List<UserProfileShortDTO> profiles = authClient.getUserProfilesByRole(role);
+
+        if (profiles == null || profiles.isEmpty()) {
+            throw new BadRequestException("Нет получателей для нотификаций");
+        }
+
+        profiles.forEach(profile-> postNotify(profile.getId(), entityType, entityId));
+    }
+
     public void postNotify(Integer userId, String entityType, Integer entityId) {
         User user = userService.findByUserId(userId);
         if (user == null) {
@@ -155,13 +169,13 @@ public class NotifyService {
                 user = userRepository.save(user);
             } catch (Exception e) {
                 log.error("Ошибка при получении email из AuthClient: {}", e.getMessage());
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Не удалось получить email пользователя");
+                throw new ForbiddenException("Не удалось получить email пользователя");
             }
         }
         BusinessEventEnum businessEventEnum = businessEventEnumRepository.findByName(entityType);
         if (businessEventEnum == null) {
             log.error("Тип события {} не найден", entityType);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Неверный тип события");
+            throw new BadRequestException("Неверный тип события");
         }
         BusinessNotify businessNotify = new BusinessNotify();
         businessNotify.setUser(user);
@@ -170,6 +184,8 @@ public class NotifyService {
         businessNotify.setWebNotify(false);
         businessNotify.setCreatedDate(LocalDateTime.now());
         businessNotifyRepository.save(businessNotify);
+        log.info(businessNotify.toString() + "saved");
+        log.info("method postNotify completed ");
     }
 
     public void patchNotify(Integer userId, String notifyType, List<Integer> notifyIds) {
