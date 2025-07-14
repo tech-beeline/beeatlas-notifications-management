@@ -7,10 +7,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import ru.beeline.fdmlib.dto.auth.EmailResponseDTO;
 import ru.beeline.fdmlib.dto.auth.UserProfileShortDTO;
 import ru.beeline.fdmnotificationsmanagement.client.AuthClient;
@@ -147,7 +144,7 @@ public class NotifyService {
         return specification;
     }
 
-    public void postGroupNotify(String entityType, Integer entityId, String role) {
+    public void postGroupNotify(String entityType, Integer entityId, String role, String name) {
 
         List<UserProfileShortDTO> profiles = authClient.getUserProfilesByRole(role);
 
@@ -155,10 +152,10 @@ public class NotifyService {
             throw new BadRequestException("Нет получателей для нотификаций");
         }
 
-        profiles.forEach(profile-> postNotify(profile.getId(), entityType, entityId));
+        profiles.forEach(profile-> postNotify(profile.getId(), entityType, entityId, name));
     }
 
-    public void postNotify(Integer userId, String entityType, Integer entityId) {
+    public void postNotify(Integer userId, String entityType, Integer entityId, String name) {
         User user = userService.findByUserId(userId);
         if (user == null) {
             user = new User();
@@ -183,6 +180,7 @@ public class NotifyService {
         businessNotify.setEntityType(businessEventEnum);
         businessNotify.setWebNotify(false);
         businessNotify.setCreatedDate(LocalDateTime.now());
+        businessNotify.setName(name);
         businessNotifyRepository.save(businessNotify);
         log.info(businessNotify.toString() + "saved");
         log.info("method postNotify completed ");
@@ -261,6 +259,7 @@ public class NotifyService {
         businessNotifyDTO.setCreatedDate(businessNotify.getCreatedDate());
         businessNotifyDTO.setEntityId(businessNotify.getEntityId());
         businessNotifyDTO.setEntityTypeId(businessNotify.getEntityType());
+        businessNotifyDTO.setName(businessNotify.getName());
         return businessNotifyDTO;
     }
 

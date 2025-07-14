@@ -33,6 +33,8 @@ public class BusinessNotify {
     @Column(name = "web_notify")
     private Boolean webNotify;
 
+    private String name;
+
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 }

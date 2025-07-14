@@ -21,6 +21,7 @@ public class BusinessNotifyDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdDate;
     private Integer entityId;
+    private String name;
     private BusinessEventEnum entityTypeId;
 
 }

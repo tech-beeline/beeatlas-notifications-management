@@ -51,20 +51,21 @@ public class NotifyController {
     @PostMapping("/business-event/{entity_type}/{entity_id}")
     @ApiOperation(value = "Создания записи о бизнес-нотификации")
     public ResponseEntity businessEvent(HttpServletRequest request,
+                                        @RequestParam(required = false) String name,
                                         @PathVariable(value = "entity_type") String entityType,
                                         @PathVariable(value = "entity_id") Integer entityId) {
         Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-        notifyService.postNotify(userId, entityType, entityId);
+        notifyService.postNotify(userId, entityType, entityId, name);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/business-event/group/role/{role}/{entity_type}/{entity_id}")
     @ApiOperation(value = "Создания записи о бизнес-нотификации для групп пользователей")
-    public ResponseEntity businessEvent(
+    public ResponseEntity businessEvent(@RequestParam(required = false) String name,
                                         @PathVariable String role,
                                         @PathVariable(value = "entity_type") String entityType,
                                         @PathVariable(value = "entity_id") Integer entityId) {
-        notifyService.postGroupNotify(entityType, entityId, role);
+        notifyService.postGroupNotify(entityType, entityId, role, name);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
