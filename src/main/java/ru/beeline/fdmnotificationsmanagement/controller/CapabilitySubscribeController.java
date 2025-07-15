@@ -35,8 +35,7 @@ public class CapabilitySubscribeController {
     @ApiOperation(value = "Получение подписок по типу сущности")
     public ResponseEntity<List<Integer>> getSubscribesByEntityType(@PathVariable(value = "entityType") String entityType,
                                                                    HttpServletRequest request) {
-        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-        List<Integer> ids = capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(userId, entityType);
+        List<Integer> ids = capabilityInteractionService.getAllEntitySubscribeByUserIdAndEntityType(request.getIntHeader(USER_ID_HEADER), entityType);
         log.info("result subscribes ids: " + ids);
         return ResponseEntity.status(HttpStatus.OK).body(ids);
     }
@@ -47,8 +46,7 @@ public class CapabilitySubscribeController {
                                        @PathVariable(value = "id") Integer entityId,
                                        HttpServletRequest request,
                                        @RequestParam(value = "sub-children", required = false) boolean subChildren) {
-        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-        capabilityInteractionService.addSubscribe(entityId, userId, entityType, subChildren);
+        capabilityInteractionService.addSubscribe(entityId, request.getIntHeader(USER_ID_HEADER), entityType, subChildren);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -56,8 +54,7 @@ public class CapabilitySubscribeController {
     @ApiOperation(value = "Удаление подписки")
     public ResponseEntity delete(@PathVariable(value = "entityType") String entityType, @PathVariable(value = "id") Integer entityId,
                                  HttpServletRequest request) {
-        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-        capabilityInteractionService.deleteSubscribe(entityId, userId, entityType);
+        capabilityInteractionService.deleteSubscribe(entityId, request.getIntHeader(USER_ID_HEADER), entityType);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

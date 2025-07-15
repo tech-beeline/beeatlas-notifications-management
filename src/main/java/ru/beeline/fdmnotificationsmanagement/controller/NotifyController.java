@@ -26,16 +26,14 @@ public class NotifyController {
     private NotifyService notifyService;
 
     @GetMapping
-    public Page<UnreadNotifyDTO> getNotifications(
-            HttpServletRequest request,
-            @RequestParam(required = false) Timestamp afterDate,
-            @RequestParam(required = false) Timestamp beforeDate,
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false) Boolean wasNotify,
-            @RequestParam(required = false) Integer page) {
-        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
+    public Page<UnreadNotifyDTO> getNotifications(HttpServletRequest request,
+                                                  @RequestParam(required = false) Timestamp afterDate,
+                                                  @RequestParam(required = false) Timestamp beforeDate,
+                                                  @RequestParam(required = false) String type,
+                                                  @RequestParam(required = false) Boolean wasNotify,
+                                                  @RequestParam(required = false) Integer page) {
 
-        return notifyService.getNotify(userId, afterDate, beforeDate, type, wasNotify, page);
+        return notifyService.getNotify(request.getIntHeader(USER_ID_HEADER), afterDate, beforeDate, type, wasNotify, page);
     }
 
     @PatchMapping
@@ -43,8 +41,7 @@ public class NotifyController {
     public ResponseEntity patchNotify(HttpServletRequest request,
                                       @RequestParam(required = false, defaultValue = "all") String notifyType,
                                       @RequestBody List<Integer> notifyIds) {
-        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-        notifyService.patchNotify(userId, notifyType, notifyIds);
+        notifyService.patchNotify(request.getIntHeader(USER_ID_HEADER), notifyType, notifyIds);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -54,8 +51,7 @@ public class NotifyController {
                                         @RequestParam(required = false) String name,
                                         @PathVariable(value = "entity_type") String entityType,
                                         @PathVariable(value = "entity_id") Integer entityId) {
-        Integer userId = Integer.valueOf(request.getHeader(USER_ID_HEADER));
-        notifyService.postNotify(userId, entityType, entityId, name);
+        notifyService.postNotify(request.getIntHeader(USER_ID_HEADER), entityType, entityId, name);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
