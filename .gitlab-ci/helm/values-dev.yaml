@@ -14,6 +14,7 @@ env:
   INTEGRATION_FRONTEND_SERVER_URL: "vault:eafdmmart/data/dev/fdm#frontendserver"
   INTEGRATION_AUTH_SERVER_URL: "vault:eafdmmart/data/dev/fdm#authserverurl"
   INTEGRATION_AUTHSSO_SERVER_URL: "vault:eafdmmart/data/dev/ambassador#authsso"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "vault:eafdmmart/data/dev/fdm#opentelemetry"
 
 podAnnotations:
   vault.security.banzaicloud.io/vault-addr: "https://vault-test.vimpelcom.ru/"
