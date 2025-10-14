@@ -39,6 +39,11 @@ public class EntityChange {
     @JoinColumn(name = "entity_id", referencedColumnName = "id")
     private ru.beeline.fdmnotificationsmanagement.domain.Entity entity;
 
+    @ToString.Exclude
+    @ManyToOne
+    @JoinColumn(name = "children_entity_id", referencedColumnName = "id")
+    private ru.beeline.fdmnotificationsmanagement.domain.Entity child;
+
     @Column(name = "change_type")
     private String changeType;
 

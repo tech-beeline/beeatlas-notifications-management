@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.beeline.fdmnotificationsmanagement.repository.ChangeTypeEnumRepository;
 import ru.beeline.fdmnotificationsmanagement.service.CapabilitySubscribeService;
 
 
@@ -17,6 +18,8 @@ public class ChangeTechCapabilityConsumer {
 
     @Autowired
     CapabilitySubscribeService capabilitySubscribeService;
+    @Autowired
+    ChangeTypeEnumRepository changeTypeEnumRepository;
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @RabbitListener(queues = "${queue.tech-queue.name}")
@@ -26,14 +29,10 @@ public class ChangeTechCapabilityConsumer {
             JsonNode jsonArray = objectMapper.readTree(message);
             if (jsonArray.isArray()) {
                 for (JsonNode jsonNode : jsonArray) {
-                    if (jsonNode.has("entity_id")
-                            && jsonNode.has("change_type")
-                            && jsonNode.has("name")) {
-                        capabilitySubscribeService.techQueueProcessor(
-                                jsonNode.get("entity_id").asInt(),
-                                jsonNode.get("name").asText(),
-                                jsonNode.get("change_type").asText()
-                        );
+                    if (jsonNode.has("entity_id") && jsonNode.has("change_type") && jsonNode.has("name")) {
+                        capabilitySubscribeService.techQueueProcessor(jsonNode.get("entity_id").asInt(),
+                                                                      jsonNode.get("name").asText(),
+                                                                      jsonNode.get("change_type").asText(), null);
                     } else {
                         log.error("Message does not match the required format");
                     }
@@ -51,19 +50,17 @@ public class ChangeTechCapabilityConsumer {
         log.info("Received from change-tech-capability: " + message, new String(message.getBytes()));
         try {
             JsonNode jsonNode = objectMapper.readTree(message);
-            if (jsonNode.has("entity_id")
-                    && jsonNode.has("change_type")
-                    && jsonNode.has("name")) {
+            if (jsonNode.has("entity_id") && jsonNode.has("change_type") && jsonNode.has("name")) {
                 String changeType = jsonNode.get("change_type").asText();
                 String name = jsonNode.get("name").asText();
                 Integer entityId = jsonNode.get("entity_id").asInt();
 
                 switch (changeType) {
                     case "UPDATE":
-                        capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType);
+                        capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType, null);
                         break;
                     case "CREATE":
-                        capabilitySubscribeService.createSubscribeTechCapability(entityId, name);
+                        capabilitySubscribeService.createSubscribeTechCapability(entityId, name, null);
                         break;
                 }
             } else {
@@ -79,19 +76,18 @@ public class ChangeTechCapabilityConsumer {
         log.info("Received from change-business-capability: " + message, new String(message.getBytes()));
         try {
             JsonNode jsonNode = objectMapper.readTree(message);
-            if (jsonNode.has("entity_id")
-                    && jsonNode.has("change_type")
-                    && jsonNode.has("name")) {
+            if (jsonNode.has("entity_id") && jsonNode.has("change_type") && jsonNode.has("name")) {
                 String changeType = jsonNode.get("change_type").asText();
                 String name = jsonNode.get("name").asText();
                 Integer entityId = jsonNode.get("entity_id").asInt();
 
                 switch (changeType) {
                     case "UPDATE":
-                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name, changeType);
+                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name, changeType,
+                                                                                     null);
                         break;
                     case "CREATE":
-                        capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name);
+                        capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name, null);
                         break;
                 }
             } else {
@@ -115,7 +111,7 @@ public class ChangeTechCapabilityConsumer {
             }
         } catch (Exception e) {
             log.error("Failed to parse message: " + e.getMessage());
-            return; // Удаляем сообщение из очереди без обработки
+            return;
         }
 
         Integer entityId = jsonNode.get("entityId").asInt();
@@ -123,29 +119,36 @@ public class ChangeTechCapabilityConsumer {
         String entityType = jsonNode.get("entityType").asText();
         String name = jsonNode.has("name") ? jsonNode.get("name").asText() : null;
 
+        if (changeTypeEnumRepository.countByName(changeType) < 1) {
+            log.error("Invalid changeType: " + changeType + ". Message: " + message);
+            return;
+        }
+        Integer childrenId = jsonNode.has("entityId") ? jsonNode.get("entityType").asInt() : null;
+        // в таблице notification.entity_change, заполнить атрибут children_entity_id = childrenId
+
         switch (entityType) {
             case "BUSINESS_CAPABILITY":
-                handleBusinessCapabilityChange(entityId, changeType, name);
+                handleBusinessCapabilityChange(entityId, changeType, name, childrenId);
                 break;
             case "TECH_CAPABILITY":
-                handleTechCapabilityChange(entityId, changeType, name);
+                handleTechCapabilityChange(entityId, changeType, name, childrenId);
                 break;
             default:
-                capabilitySubscribeService.techQueueProcessor(entityId, name, changeType);
+                capabilitySubscribeService.techQueueProcessor(entityId, name, changeType, childrenId);
                 break;
         }
     }
 
-    private void handleBusinessCapabilityChange(Integer entityId, String changeType, String name) {
+    private void handleBusinessCapabilityChange(Integer entityId, String changeType, String name, Integer childrenId) {
         switch (changeType) {
             case "DELETE":
-                capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name,changeType);
+                capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name, changeType, childrenId);
                 break;
             case "UPDATE":
-                capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name,changeType);
+                capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name, changeType, childrenId);
                 break;
             case "CREATE":
-                capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name);
+                capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name, childrenId);
                 break;
             default:
                 log.error("Unsupported change type for BUSINESS_CAPABILITY: " + changeType);
@@ -153,16 +156,16 @@ public class ChangeTechCapabilityConsumer {
         }
     }
 
-    private void handleTechCapabilityChange(Integer entityId, String changeType, String name) {
+    private void handleTechCapabilityChange(Integer entityId, String changeType, String name, Integer childrenId) {
         switch (changeType) {
             case "DELETE":
-                capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType);
+                capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType, childrenId);
                 break;
             case "UPDATE":
-                capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType);
+                capabilitySubscribeService.updateSubscribeTechCapability(entityId, name, changeType, childrenId);
                 break;
             case "CREATE":
-                capabilitySubscribeService.createSubscribeTechCapability(entityId, name);
+                capabilitySubscribeService.createSubscribeTechCapability(entityId, name, childrenId);
                 break;
         }
     }

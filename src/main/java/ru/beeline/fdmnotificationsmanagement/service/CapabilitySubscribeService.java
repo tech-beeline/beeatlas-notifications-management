@@ -53,17 +53,18 @@ public class CapabilitySubscribeService {
     @Autowired
     private UserService userService;
 
-    public void updateSubscribeBusinessCapability(Integer entityId, String name, String changeType) {
+    public void updateSubscribeBusinessCapability(Integer entityId, String name, String changeType, Integer childrenId) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum, name, changeType);
+        updateSubscribe(entityId, entityTypeEnum, name, changeType, childrenId);
     }
 
-    public void updateSubscribeTechCapability(Integer entityId, String entityName, String changeType) {
+    public void updateSubscribeTechCapability(Integer entityId, String entityName, String changeType,
+                                              Integer childrenId) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
-        updateSubscribe(entityId, entityTypeEnum, entityName, changeType);
+        updateSubscribe(entityId, entityTypeEnum, entityName, changeType, childrenId);
     }
 
-    public void createSubscribeTechCapability(Integer entityId, String entityName) {
+    public void createSubscribeTechCapability(Integer entityId, String entityName, Integer childrenId) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getTechCapabilityParents(entityId);
         if (capabilityParentDTO != null) {
             log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
@@ -74,12 +75,12 @@ public class CapabilitySubscribeService {
                         capabilityParentDTO,
                         entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
                         entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
-                        entityName);
+                        entityName, childrenId);
             }
         }
     }
 
-    public void createSubscribeBusinessCapability(Integer entityId, String entityName) {
+    public void createSubscribeBusinessCapability(Integer entityId, String entityName, Integer childrenId) {
         CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
         if (capabilityParentDTO != null) {
             log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
@@ -90,12 +91,13 @@ public class CapabilitySubscribeService {
                         capabilityParentDTO,
                         entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
                         entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
-                        entityName);
+                        entityName, childrenId);
             }
         }
     }
 
-    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName, String changeType) {
+    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName, String changeType,
+                                 Integer childrenId) {
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
         if (entity != null) {
             log.info("entityID: " + entity.getId());
@@ -111,6 +113,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                            .child(childrenId!=null ? entityService.findByEntityId(childrenId) : null)
                             .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);
@@ -130,7 +133,8 @@ public class CapabilitySubscribeService {
                                  CapabilityParentDTO capabilityParentDTO,
                                  EntityTypeEnum entityTypeEnumForFind,
                                  EntityTypeEnum entityTypeEnumForCreate,
-                                 String entityName) {
+                                 String entityName,
+                                 Integer childrenId) {
         List<Subscribe> subscribes = subscribeRepository.findByAutoSubChildrenTrue();
         log.info("subscribes: " + subscribes.stream().map(Subscribe::getId).collect(Collectors.toList()).toString());
         if (!subscribes.isEmpty()) {
@@ -151,6 +155,7 @@ public class CapabilitySubscribeService {
                         EntityChange.builder()
                                 .changeType("CREATE")
                                 .entity(entity)
+                                .child(childrenId!=null ? entityService.findByEntityId(childrenId) : null)
                                 .dateChange(Timestamp.valueOf(LocalDateTime.now()))
                                 .build());
                 Set<User> users = entities.stream()
@@ -358,9 +363,10 @@ public class CapabilitySubscribeService {
         return resultBusinessEntityList;
     }
 
-    public void techQueueProcessor(int entityId, String name, String changeType) {
+    public void techQueueProcessor(int entityId, String name, String changeType, Integer childrenId) {
         EntityTypeEnum techEntityTypeEnum = entityTypeEnumService.getTechEntityTypeEnum();
         Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
+
         if (entity != null) {
             log.info("entityID: " + entity.getId());
             if (name != null) {
@@ -375,6 +381,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                            .child(childrenId!=null ? entityService.findByEntityId(childrenId) : null)
                             .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);

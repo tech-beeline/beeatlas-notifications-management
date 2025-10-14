@@ -20,6 +20,10 @@ public class EntityService {
     }
 
 
+    public Entity findByEntityId(Integer entityId) {
+        return entityRepository.findByEntityId(entityId);
+    }
+
     public Entity findByEntityIdAndEntityType(Integer entityId, EntityTypeEnum entityType) {
         return entityRepository.findByEntityIdAndEntityType(entityId, entityType);
     }
