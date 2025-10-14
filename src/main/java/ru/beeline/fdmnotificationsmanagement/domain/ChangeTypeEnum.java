@@ -14,11 +14,9 @@ public class ChangeTypeEnum {
     @Column(name = "id")
     private Integer id;
 
-    @Enumerated(value = EnumType.STRING)
     @Column(name = "name")
     private String  name;
 
-    @Enumerated(value = EnumType.STRING)
     @Column(name = "description")
     private String  description;
 }
