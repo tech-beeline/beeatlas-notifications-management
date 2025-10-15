@@ -124,7 +124,6 @@ public class ChangeTechCapabilityConsumer {
             return;
         }
         Integer childrenId = jsonNode.has("entityId") ? jsonNode.get("entityType").asInt() : null;
-        // в таблице notification.entity_change, заполнить атрибут children_entity_id = childrenId
 
         switch (entityType) {
             case "BUSINESS_CAPABILITY":

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.beeline.fdmnotificationsmanagement.dto.EntityTypeIdDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.service.NotifyService;
 
@@ -53,6 +54,12 @@ public class NotifyController {
                                         @PathVariable(value = "entity_id") Integer entityId) {
         notifyService.postNotify(request.getIntHeader(USER_ID_HEADER), entityType, entityId, name);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/change-type")
+    @ApiOperation(value = "Получение информации о типах событий")
+    public List<EntityTypeIdDTO> getChangeType() {
+        return notifyService.getChangeTypes();
     }
 
     @PostMapping("/business-event/group/role/{role}/{entity_type}/{entity_id}")

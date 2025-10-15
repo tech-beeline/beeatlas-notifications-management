@@ -31,6 +31,7 @@ public class HeaderInterceptor implements HandlerInterceptor {
                     || request.getRequestURI().contains("/error")
                     || request.getRequestURI().contains("/all-entity-subscribe")
                     || request.getRequestURI().contains("/api-docs")
+                    || request.getRequestURI().contains("/notify/change-type")
                     || request.getRequestURI().contains("/notify/business-event")) {
                 return true;
             }

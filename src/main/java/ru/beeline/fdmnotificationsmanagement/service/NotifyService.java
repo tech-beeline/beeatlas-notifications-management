@@ -15,23 +15,17 @@ import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.BusinessNotifySpecifications;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.NotifySpecifications;
 import ru.beeline.fdmnotificationsmanagement.dto.BusinessNotifyDTO;
+import ru.beeline.fdmnotificationsmanagement.dto.EntityTypeIdDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
 import ru.beeline.fdmnotificationsmanagement.exception.ForbiddenException;
-import ru.beeline.fdmnotificationsmanagement.repository.BusinessEventEnumRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.BusinessNotifyRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.NotifyRepository;
-import ru.beeline.fdmnotificationsmanagement.repository.UserRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.*;
 
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,6 +51,9 @@ public class NotifyService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ChangeTypeEnumRepository changeTypeEnumRepository;
+
 
     public List<Notify> saveAll(List<Notify> notifies) {
         return notifyRepository.saveAll(notifies);
@@ -70,11 +67,10 @@ public class NotifyService {
                                                                           Boolean webNotify,
                                                                           Boolean emailNotify,
                                                                           Collection<Integer> entityIds) {
-        notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
-                user,
-                webNotify,
-                emailNotify,
-                entityIds);
+        notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(user,
+                                                                                   webNotify,
+                                                                                   emailNotify,
+                                                                                   entityIds);
     }
 
     public Page<UnreadNotifyDTO> getNotify(Integer userId,
@@ -91,18 +87,26 @@ public class NotifyService {
             }
         }
         User user = userService.findByUserId(userId);
-        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20, Sort.by("entityChange.dateChange").descending());
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0,
+                                                 20,
+                                                 Sort.by("entityChange.dateChange").descending());
 
         if (user == null) {
             return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
         }
 
-        final Specification<Notify> specification = getNotifySpecification(afterDate, beforeDate, type, wasNotify, user);
+        final Specification<Notify> specification = getNotifySpecification(afterDate,
+                                                                           beforeDate,
+                                                                           type,
+                                                                           wasNotify,
+                                                                           user);
 
         Page<Notify> notifyPage = notifyRepository.findAll(specification, pageRequest);
 
         if (!notifyPage.isEmpty()) {
-            List<UnreadNotifyDTO> result = notifyPage.stream().map(this::mapUnreadNotifyDTO).collect(Collectors.toList());
+            List<UnreadNotifyDTO> result = notifyPage.stream()
+                    .map(this::mapUnreadNotifyDTO)
+                    .collect(Collectors.toList());
             return new PageImpl<>(result, pageRequest, notifyPage.getTotalElements());
         }
         return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
@@ -127,7 +131,11 @@ public class NotifyService {
         return notificationDto;
     }
 
-    private static Specification<Notify> getNotifySpecification(Timestamp afterDate, Timestamp beforeDate, String type, Boolean wasNotify, User user) {
+    private static Specification<Notify> getNotifySpecification(Timestamp afterDate,
+                                                                Timestamp beforeDate,
+                                                                String type,
+                                                                Boolean wasNotify,
+                                                                User user) {
         Specification<Notify> specification = Specification.where(NotifySpecifications.hasUserId(user.getId()));
         if (wasNotify != null) {
             specification = specification.and(NotifySpecifications.hasWebNotify(wasNotify));
@@ -152,7 +160,7 @@ public class NotifyService {
             throw new BadRequestException("Нет получателей для нотификаций");
         }
 
-        profiles.forEach(profile-> postNotify(profile.getId(), entityType, entityId, name));
+        profiles.forEach(profile -> postNotify(profile.getId(), entityType, entityId, name));
     }
 
     public void postNotify(Integer userId, String entityType, Integer entityId, String name) {
@@ -231,17 +239,18 @@ public class NotifyService {
                 throw new BadRequestException("400 Неверно указан тип сущности");
             }
         }
-        PageRequest pageRequest = PageRequest.of(page != null ? page : 0, 20,
-                Sort.by(Sort.Order.desc("createdDate"), Sort.Order.asc("id")));
+        PageRequest pageRequest = PageRequest.of(page != null ? page : 0,
+                                                 20,
+                                                 Sort.by(Sort.Order.desc("createdDate"), Sort.Order.asc("id")));
         User user = userService.findByUserId(userId);
         if (user == null) {
             return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
         }
-        final Specification<BusinessNotify> specification = getBusinessNotifySpecification(
-                afterDate == null ? null : afterDate.toLocalDateTime(),
-                beforeDate == null ? null : beforeDate.toLocalDateTime(),
-                type, wasNotify, user
-        );
+        final Specification<BusinessNotify> specification = getBusinessNotifySpecification(afterDate == null ? null : afterDate.toLocalDateTime(),
+                                                                                           beforeDate == null ? null : beforeDate.toLocalDateTime(),
+                                                                                           type,
+                                                                                           wasNotify,
+                                                                                           user);
         Page<BusinessNotify> notifyPage = businessNotifyRepository.findAll(specification, pageRequest);
         if (!notifyPage.isEmpty()) {
             List<BusinessNotifyDTO> result = notifyPage.stream()
@@ -263,8 +272,11 @@ public class NotifyService {
         return businessNotifyDTO;
     }
 
-    private static Specification<BusinessNotify> getBusinessNotifySpecification(LocalDateTime afterDate, LocalDateTime beforeDate,
-                                                                                String type, Boolean wasNotify, User user) {
+    private static Specification<BusinessNotify> getBusinessNotifySpecification(LocalDateTime afterDate,
+                                                                                LocalDateTime beforeDate,
+                                                                                String type,
+                                                                                Boolean wasNotify,
+                                                                                User user) {
         Specification<BusinessNotify> specification = Specification.where(BusinessNotifySpecifications.hasUserId(user.getId()));
         if (wasNotify != null) {
             specification = specification.and(BusinessNotifySpecifications.hasWebNotify(wasNotify));
@@ -296,5 +308,16 @@ public class NotifyService {
                 }
             }
         }
+    }
+
+    public List<EntityTypeIdDTO> getChangeTypes() {
+        return changeTypeEnumRepository.findAll()
+                .stream()
+                .map(element -> EntityTypeIdDTO.builder()
+                        .id(element.getId())
+                        .name(element.getName())
+                        .description(element.getDescription())
+                        .build())
+                .toList();
     }
 }
