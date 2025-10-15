@@ -15,6 +15,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.BusinessNotifySpecifications;
 import ru.beeline.fdmnotificationsmanagement.domain.specification.NotifySpecifications;
 import ru.beeline.fdmnotificationsmanagement.dto.BusinessNotifyDTO;
+import ru.beeline.fdmnotificationsmanagement.dto.ChangeTypeIdDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.EntityTypeIdDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
@@ -53,6 +54,9 @@ public class NotifyService {
 
     @Autowired
     private ChangeTypeEnumRepository changeTypeEnumRepository;
+
+    @Autowired
+    private EntityTypeEnumRepository entityTypeEnumRepository;
 
 
     public List<Notify> saveAll(List<Notify> notifies) {
@@ -310,13 +314,24 @@ public class NotifyService {
         }
     }
 
-    public List<EntityTypeIdDTO> getChangeTypes() {
+    public List<ChangeTypeIdDTO> getChangeTypes() {
         return changeTypeEnumRepository.findAll()
                 .stream()
-                .map(element -> EntityTypeIdDTO.builder()
+                .map(element -> ChangeTypeIdDTO.builder()
                         .id(element.getId())
                         .name(element.getName())
                         .description(element.getDescription())
+                        .build())
+                .toList();
+    }
+
+    public List<EntityTypeIdDTO> getEntityTypes() {
+        return entityTypeEnumRepository.findAll()
+                .stream()
+                .map(element -> EntityTypeIdDTO.builder()
+                        .id(element.getId())
+                        .type(element.getType().getDeclaringClass().getName())
+                        .alias(element.getAlias())
                         .build())
                 .toList();
     }

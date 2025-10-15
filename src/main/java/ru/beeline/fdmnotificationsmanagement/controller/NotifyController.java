@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.beeline.fdmnotificationsmanagement.dto.ChangeTypeIdDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.EntityTypeIdDTO;
 import ru.beeline.fdmnotificationsmanagement.dto.UnreadNotifyDTO;
 import ru.beeline.fdmnotificationsmanagement.service.NotifyService;
@@ -58,8 +59,14 @@ public class NotifyController {
 
     @GetMapping("/change-type")
     @ApiOperation(value = "Получение информации о типах событий")
-    public List<EntityTypeIdDTO> getChangeType() {
+    public List<ChangeTypeIdDTO> getChangeType() {
         return notifyService.getChangeTypes();
+    }
+
+    @GetMapping("/entity-type")
+    @ApiOperation(value = "Получение информации о типах событий")
+    public List<EntityTypeIdDTO> getEntityType() {
+        return notifyService.getEntityTypes();
     }
 
     @PostMapping("/business-event/group/role/{role}/{entity_type}/{entity_id}")

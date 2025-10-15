@@ -21,6 +21,9 @@ public class EntityTypeEnum {
     @Column(name = "id")
     private Integer id;
 
+    @Column(name = "alias")
+    private String  alias;
+
     @Enumerated(value = EnumType.STRING)
     @Column(name = "type")
     private CapabilitySubscriptionType type;

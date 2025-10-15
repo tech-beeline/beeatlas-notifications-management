@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EntityTypeIdDTO {
+public class ChangeTypeIdDTO {
 
     private Integer id;
-    private String type;
-    private String alias;
+    private String name;
+    private String description;
 }
