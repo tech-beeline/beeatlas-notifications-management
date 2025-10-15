@@ -45,8 +45,10 @@ public class CapabilitySubscribeController {
     public ResponseEntity addSubscribe(@PathVariable(value = "entityType") String entityType,
                                        @PathVariable(value = "id") Integer entityId,
                                        HttpServletRequest request,
-                                       @RequestParam(value = "sub-children", required = false) boolean subChildren) {
-        capabilityInteractionService.addSubscribe(entityId, request.getIntHeader(USER_ID_HEADER), entityType, subChildren);
+                                       @RequestParam(value = "sub-children", required = false) boolean subChildren,
+                                       @RequestParam(value = "name", required = false) String name) {
+        capabilityInteractionService.addSubscribe(entityId, request.getIntHeader(USER_ID_HEADER), entityType,
+                                                  subChildren, name);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

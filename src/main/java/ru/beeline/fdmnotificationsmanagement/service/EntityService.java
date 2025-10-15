@@ -32,15 +32,21 @@ public class EntityService {
         return entityRepository.findAllByEntityIdInAndEntityType(entityIds, entityType);
     }
 
-    public Entity getEntityOrCreate(String link, Integer id, EntityTypeEnum entityTypeEnum) {
+    public Entity getEntityOrCreate(String link, Integer id, EntityTypeEnum entityTypeEnum, String name) {
         Entity techEntity = findByEntityIdAndEntityType(
                 id, entityTypeEnum);
         if (techEntity == null) {
             techEntity = save(Entity.builder()
                     .entityId(id)
                     .link(link)
+                    .name(name)
                     .entityType(entityTypeEnum)
                     .build());
+        }else {
+            if (!techEntity.getName().equals(name)) {
+                techEntity.setName(name);
+                save(techEntity);
+            }
         }
         return techEntity;
     }

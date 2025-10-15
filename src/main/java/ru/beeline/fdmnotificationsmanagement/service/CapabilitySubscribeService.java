@@ -264,14 +264,15 @@ public class CapabilitySubscribeService {
         }
     }
 
-    public void addSubscribe(Integer entityId, Integer userId, String entityType, boolean subChildren) {
+    public void addSubscribe(Integer entityId, Integer userId, String entityType, boolean subChildren, String name) {
         log.info("start addSubscribe method");
         User user = userService.findByUserIdOrCreate(userId);
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
         final Entity entity = entityService.getEntityOrCreate(
                 generateLink(entityTypeEnum, entityId),
                 entityId,
-                entityTypeEnum);
+                entityTypeEnum,
+                name);
         boolean autoSubChildren = entityType.equals("BUSINESS_CAPABILITY") && subChildren;
         Subscribe subscribe = subscribeRepository.findByUserAndEntity(user, entity);
         if (subscribe == null) {
