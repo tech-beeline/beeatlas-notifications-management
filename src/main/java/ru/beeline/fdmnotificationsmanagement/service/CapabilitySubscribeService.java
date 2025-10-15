@@ -398,6 +398,40 @@ public class CapabilitySubscribeService {
         }
     }
 
+    public void notificationQueue(Integer entityId, String name, String changeType, Integer childrenId, String entityType) {
+        EntityTypeEnum techEntityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+        Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
+
+        if (entity != null) {
+            log.info("entityID: " + entity.getId());
+            if (name != null) {
+                if (!name.isEmpty() && !name.equals(entity.getName())) {
+                    entity.setName(name);
+                    entityService.save(entity);
+                }
+            }
+            List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
+            if (!subscribes.isEmpty()) {
+                subscribes.forEach(subscribe -> {
+                    EntityChange entityChange = EntityChange.builder()
+                            .entity(subscribe.getEntity())
+                            .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                            .child(childrenId!=null ? entityService.findByEntityId(childrenId) : null)
+                            .changeType(changeType)
+                            .build();
+                    entityChange = entityChangeService.save(entityChange);
+                    Notify notify = Notify.builder()
+                            .user(subscribe.getUser())
+                            .webNotify(false)
+                            .emailNotify(false)
+                            .entityChange(entityChange)
+                            .build();
+                    notifyService.save(notify);
+                });
+            }
+        }
+    }
+
     private void createSubscribes(Entity entity, User user, boolean autoSubChildren) {
         subscribeRepository.save(Subscribe.builder()
                 .user(user)
@@ -423,4 +457,5 @@ public class CapabilitySubscribeService {
         }
         return path;
     }
+
 }

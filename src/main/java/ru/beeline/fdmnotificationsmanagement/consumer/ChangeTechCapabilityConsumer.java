@@ -133,7 +133,7 @@ public class ChangeTechCapabilityConsumer {
                 handleTechCapabilityChange(entityId, changeType, name, childrenId);
                 break;
             default:
-                capabilitySubscribeService.techQueueProcessor(entityId, name, changeType, childrenId);
+                capabilitySubscribeService.notificationQueue(entityId, name, changeType, childrenId, entityType);
                 break;
         }
     }
