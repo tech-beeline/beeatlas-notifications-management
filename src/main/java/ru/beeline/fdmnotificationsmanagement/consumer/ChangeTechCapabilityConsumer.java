@@ -32,7 +32,8 @@ public class ChangeTechCapabilityConsumer {
                     if (jsonNode.has("entity_id") && jsonNode.has("change_type") && jsonNode.has("name")) {
                         capabilitySubscribeService.techQueueProcessor(jsonNode.get("entity_id").asInt(),
                                                                       jsonNode.get("name").asText(),
-                                                                      jsonNode.get("change_type").asText(), null);
+                                                                      jsonNode.get("change_type").asText(),
+                                                                      null);
                     } else {
                         log.error("Message does not match the required format");
                     }
@@ -83,8 +84,7 @@ public class ChangeTechCapabilityConsumer {
 
                 switch (changeType) {
                     case "UPDATE":
-                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name, changeType,
-                                                                                     null);
+                        capabilitySubscribeService.updateSubscribeBusinessCapability(entityId, name, changeType, null);
                         break;
                     case "CREATE":
                         capabilitySubscribeService.createSubscribeBusinessCapability(entityId, name, null);
@@ -109,34 +109,34 @@ public class ChangeTechCapabilityConsumer {
                 log.error("Message does not match the required format: " + message);
                 throw new IllegalArgumentException("Message does not match the required format: " + message);
             }
+
+            Integer entityId = jsonNode.get("entityId").asInt();
+            String changeType = jsonNode.get("changeType").asText();
+            String entityType = jsonNode.get("entityType").asText();
+            String name = jsonNode.has("name") ? jsonNode.get("name").asText() : null;
+
+            if (changeTypeEnumRepository.countByName(changeType) < 1) {
+                log.error("Invalid changeType: " + changeType + ". Message: " + message);
+                return;
+            }
+            Integer childrenId = jsonNode.has("entityId") ? jsonNode.get("entityType").asInt() : null;
+
+            switch (entityType) {
+                case "BUSINESS_CAPABILITY":
+                    handleBusinessCapabilityChange(entityId, changeType, name, childrenId);
+                    break;
+                case "TECH_CAPABILITY":
+                    handleTechCapabilityChange(entityId, changeType, name, childrenId);
+                    break;
+                default:
+                    capabilitySubscribeService.notificationQueue(entityId, name, changeType, childrenId, entityType);
+                    break;
+            }
         } catch (Exception e) {
             log.error("Failed to parse message: " + e.getMessage());
-            return;
-        }
-
-        Integer entityId = jsonNode.get("entityId").asInt();
-        String changeType = jsonNode.get("changeType").asText();
-        String entityType = jsonNode.get("entityType").asText();
-        String name = jsonNode.has("name") ? jsonNode.get("name").asText() : null;
-
-        if (changeTypeEnumRepository.countByName(changeType) < 1) {
-            log.error("Invalid changeType: " + changeType + ". Message: " + message);
-            return;
-        }
-        Integer childrenId = jsonNode.has("entityId") ? jsonNode.get("entityType").asInt() : null;
-
-        switch (entityType) {
-            case "BUSINESS_CAPABILITY":
-                handleBusinessCapabilityChange(entityId, changeType, name, childrenId);
-                break;
-            case "TECH_CAPABILITY":
-                handleTechCapabilityChange(entityId, changeType, name, childrenId);
-                break;
-            default:
-                capabilitySubscribeService.notificationQueue(entityId, name, changeType, childrenId, entityType);
-                break;
         }
     }
+
 
     private void handleBusinessCapabilityChange(Integer entityId, String changeType, String name, Integer childrenId) {
         switch (changeType) {
