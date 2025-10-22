@@ -28,6 +28,9 @@ public class EntityTypeEnum {
     @Column(name = "type")
     private CapabilitySubscriptionType type;
 
+    @Column(name = "base_link_template")
+    private String baseLinkTemplate;
+
 
     public enum CapabilitySubscriptionType {
         TECH,
