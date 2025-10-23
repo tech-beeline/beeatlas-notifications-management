@@ -25,4 +25,5 @@ public class UnreadNotifyDTO {
     private String alias;
     private Integer childrenEntityId;
     private String linkTemplate;
+    private String changeDescription;
 }

@@ -7,4 +7,5 @@ import ru.beeline.fdmnotificationsmanagement.domain.ChangeTypeEnum;
 @Repository
 public interface ChangeTypeEnumRepository extends JpaRepository<ChangeTypeEnum, Long> {
     int countByName(String name);
+    ChangeTypeEnum findChangeTypeEnumByName(String name);
 }
