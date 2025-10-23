@@ -330,7 +330,7 @@ public class NotifyService {
                 .stream()
                 .map(element -> EntityTypeIdDTO.builder()
                         .id(element.getId())
-                        .type(element.getType().getDeclaringClass().getName())
+                        .type(element.getType().toString())
                         .alias(element.getAlias())
                         .build())
                 .toList();
