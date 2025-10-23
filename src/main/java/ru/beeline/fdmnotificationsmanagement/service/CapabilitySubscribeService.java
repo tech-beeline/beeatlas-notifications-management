@@ -8,10 +8,13 @@ import ru.beeline.fdmlib.dto.capability.BusinessCapabilityChildrenIdsDTO;
 import ru.beeline.fdmnotificationsmanagement.client.CapabilityClient;
 import ru.beeline.fdmnotificationsmanagement.domain.*;
 import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
+import ru.beeline.fdmnotificationsmanagement.dto.GetUserSubscribeDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
 import ru.beeline.fdmnotificationsmanagement.repository.EntityRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.EntityTypeEnumRepository;
 import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.UserRepository;
 
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
@@ -36,6 +39,9 @@ public class CapabilitySubscribeService {
     private EntityTypeEnumService entityTypeEnumService;
 
     @Autowired
+    private EntityTypeEnumRepository entityTypeEnumRepository;
+
+    @Autowired
     private EntityChangeService entityChangeService;
 
     @Autowired
@@ -52,6 +58,9 @@ public class CapabilitySubscribeService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public void updateSubscribeBusinessCapability(Integer entityId, String name, String changeType, Integer childrenId) {
         EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
@@ -113,7 +122,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                            .child(childrenId!=null ? entityService.findByEntityId(childrenId) : null)
+                            .child(childrenId != null ? entityService.findByEntityId(childrenId) : null)
                             .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);
@@ -155,7 +164,7 @@ public class CapabilitySubscribeService {
                         EntityChange.builder()
                                 .changeType("CREATE")
                                 .entity(entity)
-                                .child(childrenId!=null ? entityService.findByEntityId(childrenId) : null)
+                                .child(childrenId != null ? entityService.findByEntityId(childrenId) : null)
                                 .dateChange(Timestamp.valueOf(LocalDateTime.now()))
                                 .build());
                 Set<User> users = entities.stream()
@@ -198,6 +207,44 @@ public class CapabilitySubscribeService {
             return entityIds;
         }
         return new ArrayList<>();
+    }
+
+    public List<GetUserSubscribeDTO> getUserSubscribes(String entityType, Integer userId) {
+        List<GetUserSubscribeDTO> result = new ArrayList<>();
+        User user = userRepository.findByUserId(userId);
+        if (user != null) {
+            List<Subscribe> subscribes = subscribeRepository.findAllByUser(user);
+            if (!subscribes.isEmpty()) {
+                List<Integer> entityIds = subscribes.stream()
+                        .map(Subscribe::getEntity)
+                        .map(Entity::getId)
+                        .collect(Collectors.toList());
+                List<Entity> entities;
+                if (entityType != null && !entityType.isEmpty()) {
+                    EntityTypeEnum entityTypeEnum;
+                    try {
+                        entityTypeEnum = entityTypeEnumRepository.findByType(
+                                EntityTypeEnum.CapabilitySubscriptionType.valueOf(entityType));
+                    } catch (IllegalArgumentException e) {
+                        log.info("❌ Некорректное значение entityType: {} ", entityType);
+                        return new ArrayList<>();
+                    }
+                    if (entityTypeEnum == null) {
+                        log.info("❌ Запись с entityType: {}, не найдена", entityType);
+                        return new ArrayList<>();
+                    }
+                    entities = entityRepository.findAllByIdInAndEntityType(entityIds, entityTypeEnum);
+                } else {
+                    entities = entityRepository.findAllByIdIn(entityIds);
+                }
+                entities.forEach(entity -> result.add(GetUserSubscribeDTO.builder()
+                        .id(entity.getEntityId())
+                        .name(entity.getName())
+                        .entityType(entity.getEntityType().getType().name())
+                        .build()));
+            }
+        }
+        return result;
     }
 
     public void deleteSubscribe(Integer entityId, Integer userId, String entityType) {
@@ -382,7 +429,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                            .child(childrenId!=null ? entityService.findByEntityId(childrenId) : null)
+                            .child(childrenId != null ? entityService.findByEntityId(childrenId) : null)
                             .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);
@@ -416,7 +463,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                            .child(childrenId!=null ? entityService.findByEntityId(childrenId) : null)
+                            .child(childrenId != null ? entityService.findByEntityId(childrenId) : null)
                             .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);

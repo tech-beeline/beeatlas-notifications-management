@@ -18,6 +18,8 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
 
     Subscribe findByUserAndEntity(User user, Entity entity);
 
+    List<Subscribe> findAllByUser(User user);
+
     List<Subscribe> findByUserAndEntityIn(User user, List<Entity> EntityList);
 
     List<Subscribe> findByAutoSubChildrenTrue();

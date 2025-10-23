@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.beeline.fdmnotificationsmanagement.dto.GetUserSubscribeDTO;
 import ru.beeline.fdmnotificationsmanagement.service.CapabilitySubscribeService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +41,15 @@ public class CapabilitySubscribeController {
         return ResponseEntity.status(HttpStatus.OK).body(ids);
     }
 
+    @GetMapping("/subscribe")
+    @ApiOperation(value = "Получение подписок пользователя")
+    public ResponseEntity<List<GetUserSubscribeDTO>> gerUserSubscribes(
+            @RequestParam(value = "entityType", required = false) String entityType,
+            HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                capabilityInteractionService.getUserSubscribes(entityType, request.getIntHeader(USER_ID_HEADER)));
+    }
+
     @PostMapping("/subscribe/{entityType}/{id}")
     @ApiOperation(value = "Добавление подписки")
     public ResponseEntity addSubscribe(@PathVariable(value = "entityType") String entityType,
@@ -48,7 +58,7 @@ public class CapabilitySubscribeController {
                                        @RequestParam(value = "sub-children", required = false) boolean subChildren,
                                        @RequestParam(value = "name", required = false) String name) {
         capabilityInteractionService.addSubscribe(entityId, request.getIntHeader(USER_ID_HEADER), entityType,
-                                                  subChildren, name);
+                subChildren, name);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
