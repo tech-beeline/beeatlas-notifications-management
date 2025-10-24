@@ -43,7 +43,7 @@ public class EntityService {
                     .entityType(entityTypeEnum)
                     .build());
         }else {
-            if (!techEntity.getName().equals(name)) {
+            if (techEntity.getName() != null && !techEntity.getName().equals(name)) {
                 techEntity.setName(name);
                 save(techEntity);
             }
