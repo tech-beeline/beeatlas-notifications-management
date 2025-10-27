@@ -347,7 +347,7 @@ public class NotifyService {
                         .id(element.getId())
                         .type(element.getType().toString())
                         .alias(element.getAlias())
-                        .baseLinkTemplate(element.getType().toString())
+                        .baseLinkTemplate(element.getBaseLinkTemplate())
                         .build())
                 .toList();
     }
