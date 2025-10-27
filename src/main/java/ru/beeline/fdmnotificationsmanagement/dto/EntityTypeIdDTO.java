@@ -15,4 +15,5 @@ public class EntityTypeIdDTO {
     private Integer id;
     private String type;
     private String alias;
+    private String baseLinkTemplate;
 }

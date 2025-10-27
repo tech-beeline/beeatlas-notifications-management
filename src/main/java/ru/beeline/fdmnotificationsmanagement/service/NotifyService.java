@@ -135,6 +135,11 @@ public class NotifyService {
                         entityChange.getChangeType(),
                         entity.getEntityType());
                 entityTypeTemplateLink.ifPresent(typeTemplateLink -> notificationDto.setLinkTemplate(typeTemplateLink.getLinkTemplate()));
+                if(entityTypeTemplateLink.isPresent()){
+                    notificationDto.setLinkTemplate(entityTypeTemplateLink.get().getLinkTemplate());
+                } else {
+                    notificationDto.setLinkTemplate(entity.getEntityType().getBaseLinkTemplate());
+                }
                 notificationDto.setAlias(entity.getEntityType().getAlias());
                 notificationDto.setEntityId(entity.getEntityId());
                 notificationDto.setEntityName(entity.getName());
@@ -342,6 +347,7 @@ public class NotifyService {
                         .id(element.getId())
                         .type(element.getType().toString())
                         .alias(element.getAlias())
+                        .baseLinkTemplate(element.getType().toString())
                         .build())
                 .toList();
     }
