@@ -119,7 +119,7 @@ public class ChangeTechCapabilityConsumer {
                 log.error("Invalid changeType: " + changeType + ". Message: " + message);
                 return;
             }
-            Integer childrenId = jsonNode.has("entityId") ? jsonNode.get("entityType").asInt() : null;
+            Integer childrenId = jsonNode.has("childrenId") ? jsonNode.get("childrenId").asInt() : null;
 
             switch (entityType) {
                 case "BUSINESS_CAPABILITY":
