@@ -37,5 +37,6 @@ public class EntityTypeEnum {
         TECH_CAPABILITY,
         BUSINESS,
         BUSINESS_CAPABILITY,
+        arch_interface
     }
 }
