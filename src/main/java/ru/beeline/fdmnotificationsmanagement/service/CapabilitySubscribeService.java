@@ -500,7 +500,7 @@ public class CapabilitySubscribeService {
                 path = frontendServerUrl + "/models/tech-radar?id=" + entityId;
                 break;
             default:
-                throw new IllegalArgumentException("Unknown entity type: " + entityTypeEnum.getType());
+                path = frontendServerUrl + "/models";
         }
         return path;
     }
