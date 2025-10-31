@@ -75,17 +75,13 @@ public class NotifyService {
                                                                           Boolean emailNotify,
                                                                           Collection<Integer> entityIds) {
         notifyRepository.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(user,
-                                                                                   webNotify,
-                                                                                   emailNotify,
-                                                                                   entityIds);
+                webNotify,
+                emailNotify,
+                entityIds);
     }
 
-    public Page<UnreadNotifyDTO> getNotify(Integer userId,
-                                           Timestamp afterDate,
-                                           Timestamp beforeDate,
-                                           String type,
-                                           Boolean wasNotify,
-                                           Integer page) {
+    public Page<UnreadNotifyDTO> getNotify(Integer userId, Timestamp afterDate, Timestamp beforeDate,
+                                           String type, Boolean wasNotify, Integer page) {
         if (type != null) {
             try {
                 EntityTypeEnum.CapabilitySubscriptionType.valueOf(type);
@@ -95,17 +91,16 @@ public class NotifyService {
         }
         User user = userService.findByUserId(userId);
         PageRequest pageRequest = PageRequest.of(page != null ? page : 0,
-                                                 20,
-                                                 Sort.by("entityChange.dateChange").descending());
+                20,
+                Sort.by("entityChange.dateChange").descending());
         if (user == null) {
             return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
         }
-
         final Specification<Notify> specification = getNotifySpecification(afterDate,
-                                                                           beforeDate,
-                                                                           type,
-                                                                           wasNotify,
-                                                                           user);
+                beforeDate,
+                type,
+                wasNotify,
+                user);
         Page<Notify> notifyPage = notifyRepository.findAll(specification, pageRequest);
         if (!notifyPage.isEmpty()) {
 
@@ -128,14 +123,14 @@ public class NotifyService {
             notificationDto.setChangeDate(entityChange.getDateChange());
             notificationDto.setChangeType(entityChange.getChangeType());
             notificationDto.setChildrenEntityId(entityChange.getChild() != null ? entityChange.getChild()
-                    .getId() : null);
+                    .getEntityId() : null);
             Entity entity = entityChange.getEntity();
             if (entity != null) {
                 Optional<EntityTypeTemplateLink> entityTypeTemplateLink = entityTypeTemplateLinkRepository.findByChangeTypeAndEntityType(
                         entityChange.getChangeType(),
                         entity.getEntityType());
                 entityTypeTemplateLink.ifPresent(typeTemplateLink -> notificationDto.setLinkTemplate(typeTemplateLink.getLinkTemplate()));
-                if(entityTypeTemplateLink.isPresent()){
+                if (entityTypeTemplateLink.isPresent()) {
                     notificationDto.setLinkTemplate(entityTypeTemplateLink.get().getLinkTemplate());
                 } else {
                     notificationDto.setLinkTemplate(entity.getEntityType().getBaseLinkTemplate());
@@ -259,17 +254,17 @@ public class NotifyService {
             }
         }
         PageRequest pageRequest = PageRequest.of(page != null ? page : 0,
-                                                 20,
-                                                 Sort.by(Sort.Order.desc("createdDate"), Sort.Order.asc("id")));
+                20,
+                Sort.by(Sort.Order.desc("createdDate"), Sort.Order.asc("id")));
         User user = userService.findByUserId(userId);
         if (user == null) {
             return new PageImpl<>(Collections.emptyList(), pageRequest, 0);
         }
         final Specification<BusinessNotify> specification = getBusinessNotifySpecification(afterDate == null ? null : afterDate.toLocalDateTime(),
-                                                                                           beforeDate == null ? null : beforeDate.toLocalDateTime(),
-                                                                                           type,
-                                                                                           wasNotify,
-                                                                                           user);
+                beforeDate == null ? null : beforeDate.toLocalDateTime(),
+                type,
+                wasNotify,
+                user);
         Page<BusinessNotify> notifyPage = businessNotifyRepository.findAll(specification, pageRequest);
         if (!notifyPage.isEmpty()) {
             List<BusinessNotifyDTO> result = notifyPage.stream()

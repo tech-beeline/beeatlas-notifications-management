@@ -38,6 +38,19 @@ public class NotifyController {
         return notifyService.getNotify(request.getIntHeader(USER_ID_HEADER), afterDate, beforeDate, type, wasNotify, page);
     }
 
+    @GetMapping("/change-type")
+    @ApiOperation(value = "Получение информации о типах событий")
+    public List<ChangeTypeIdDTO> getChangeType() {
+        return notifyService.getChangeTypes();
+    }
+
+    @GetMapping("/entity-type")
+    @ApiOperation(value = "Получение информации о типах событий")
+    public List<EntityTypeIdDTO> getEntityType() {
+        return notifyService.getEntityTypes();
+    }
+
+
     @PatchMapping
     @ApiOperation(value = "Обновление статуса уведомлений")
     public ResponseEntity patchNotify(HttpServletRequest request,
@@ -55,18 +68,6 @@ public class NotifyController {
                                         @PathVariable(value = "entity_id") Integer entityId) {
         notifyService.postNotify(request.getIntHeader(USER_ID_HEADER), entityType, entityId, name);
         return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    @GetMapping("/change-type")
-    @ApiOperation(value = "Получение информации о типах событий")
-    public List<ChangeTypeIdDTO> getChangeType() {
-        return notifyService.getChangeTypes();
-    }
-
-    @GetMapping("/entity-type")
-    @ApiOperation(value = "Получение информации о типах событий")
-    public List<EntityTypeIdDTO> getEntityType() {
-        return notifyService.getEntityTypes();
     }
 
     @PostMapping("/business-event/group/role/{role}/{entity_type}/{entity_id}")
