@@ -122,7 +122,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                            .child(childrenId != null ? entityService.findByEntityId(childrenId) : null)
+                            .childrenEntityId(childrenId)
                             .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);
@@ -164,7 +164,7 @@ public class CapabilitySubscribeService {
                         EntityChange.builder()
                                 .changeType("CREATE")
                                 .entity(entity)
-                                .child(childrenId != null ? entityService.findByEntityId(childrenId) : null)
+                                .childrenEntityId(childrenId)
                                 .dateChange(Timestamp.valueOf(LocalDateTime.now()))
                                 .build());
                 Set<User> users = entities.stream()
@@ -429,7 +429,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                            .child(childrenId != null ? entityService.findByEntityId(childrenId) : null)
+                            .childrenEntityId(childrenId)
                             .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);
@@ -463,7 +463,7 @@ public class CapabilitySubscribeService {
                     EntityChange entityChange = EntityChange.builder()
                             .entity(subscribe.getEntity())
                             .dateChange(Timestamp.valueOf(LocalDateTime.now()))
-                            .child(childrenId != null ? entityService.findByEntityId(childrenId) : null)
+                            .childrenEntityId(childrenId)
                             .changeType(changeType)
                             .build();
                     entityChange = entityChangeService.save(entityChange);
