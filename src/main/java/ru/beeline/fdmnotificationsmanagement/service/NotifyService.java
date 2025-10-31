@@ -122,8 +122,7 @@ public class NotifyService {
         if (entityChange != null) {
             notificationDto.setChangeDate(entityChange.getDateChange());
             notificationDto.setChangeType(entityChange.getChangeType());
-            notificationDto.setChildrenEntityId(entityChange.getChild() != null ? entityChange.getChild()
-                    .getEntityId() : null);
+            notificationDto.setChildrenEntityId(entityChange.getChildrenEntityId());
             Entity entity = entityChange.getEntity();
             if (entity != null) {
                 Optional<EntityTypeTemplateLink> entityTypeTemplateLink = entityTypeTemplateLinkRepository.findByChangeTypeAndEntityType(
