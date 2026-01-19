@@ -7,6 +7,7 @@ import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
 import ru.beeline.fdmnotificationsmanagement.repository.EntityRepository;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class EntityService {
@@ -42,8 +43,8 @@ public class EntityService {
                     .name(name)
                     .entityType(entityTypeEnum)
                     .build());
-        }else {
-            if (techEntity.getName() != null && !techEntity.getName().equals(name)) {
+        } else {
+            if (!Objects.equals(techEntity.getName(), name)) {
                 techEntity.setName(name);
                 save(techEntity);
             }

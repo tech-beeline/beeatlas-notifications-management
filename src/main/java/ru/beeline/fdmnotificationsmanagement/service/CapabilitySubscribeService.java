@@ -223,8 +223,7 @@ public class CapabilitySubscribeService {
                 if (entityType != null && !entityType.isEmpty()) {
                     EntityTypeEnum entityTypeEnum;
                     try {
-                        entityTypeEnum = entityTypeEnumRepository.findByType(
-                                EntityTypeEnum.CapabilitySubscriptionType.valueOf(entityType));
+                        entityTypeEnum = entityTypeEnumRepository.findByType(entityType);
                     } catch (IllegalArgumentException e) {
                         log.info("❌ Некорректное значение entityType: {} ", entityType);
                         return new ArrayList<>();
@@ -240,7 +239,7 @@ public class CapabilitySubscribeService {
                 entities.forEach(entity -> result.add(GetUserSubscribeDTO.builder()
                         .id(entity.getEntityId())
                         .name(entity.getName())
-                        .entityType(entity.getEntityType().getType().name())
+                        .entityType(entity.getEntityType().getType())
                         .build()));
             }
         }
@@ -314,7 +313,7 @@ public class CapabilitySubscribeService {
     public void addSubscribe(Integer entityId, Integer userId, String entityType, boolean subChildren, String name) {
         log.info("start addSubscribe method");
         User user = userService.findByUserIdOrCreate(userId);
-        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+        EntityTypeEnum entityTypeEnum = entityTypeEnumRepository.findByType(entityType);
         final Entity entity = entityService.getEntityOrCreate(
                 generateLink(entityTypeEnum, entityId),
                 entityId,
@@ -490,13 +489,13 @@ public class CapabilitySubscribeService {
     private String generateLink(EntityTypeEnum entityTypeEnum, Integer entityId) {
         String path = "";
         switch (entityTypeEnum.getType()) {
-            case TECH_CAPABILITY:
+            case "TECH_CAPABILITY":
                 path = frontendServerUrl + "/models/fdm?id=" + entityId + "&type=TECH";
                 break;
-            case BUSINESS_CAPABILITY:
+            case "BUSINESS_CAPABILITY":
                 path = frontendServerUrl + "/models/fdm?id=" + entityId + "&type=BUSINESS";
                 break;
-            case TECH:
+            case "TECH":
                 path = frontendServerUrl + "/models/tech-radar?id=" + entityId;
                 break;
             default:
