@@ -138,7 +138,7 @@ public class NotifyService {
                 notificationDto.setEntityId(entity.getEntityId());
                 notificationDto.setEntityName(entity.getName());
                 notificationDto.setEntityLink(entity.getLink());
-                notificationDto.setEntityType(entity.getEntityType().getType().name());
+                notificationDto.setEntityType(entity.getEntityType().getType());
             }
         }
         return notificationDto;

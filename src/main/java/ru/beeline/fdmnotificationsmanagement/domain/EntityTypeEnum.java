@@ -24,9 +24,8 @@ public class EntityTypeEnum {
     @Column(name = "alias")
     private String  alias;
 
-    @Enumerated(value = EnumType.STRING)
     @Column(name = "type")
-    private CapabilitySubscriptionType type;
+    private String type;
 
     @Column(name = "base_link_template")
     private String baseLinkTemplate;

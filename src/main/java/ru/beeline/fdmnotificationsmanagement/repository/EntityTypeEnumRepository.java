@@ -6,5 +6,5 @@ import ru.beeline.fdmnotificationsmanagement.domain.EntityTypeEnum;
 
 @Repository
 public interface EntityTypeEnumRepository extends JpaRepository<EntityTypeEnum, Long> {
-    EntityTypeEnum findByType(EntityTypeEnum.CapabilitySubscriptionType capabilitySubscriptionType);
+    EntityTypeEnum findByType(String type);
 }

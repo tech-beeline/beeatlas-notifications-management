@@ -20,21 +20,21 @@ public class EntityTypeEnumService {
 
     public EntityTypeEnum getTechCapabilityEntityTypeEnum() {
         if (Objects.isNull(techCapability)) {
-            techCapability = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.TECH_CAPABILITY);
+            techCapability = entityTypeEnumRepository.findByType("TECH_CAPABILITY");
         }
         return techCapability;
     }
 
     public EntityTypeEnum getBusinessCapabilityEntityTypeEnum() {
         if (Objects.isNull(businessCapability)) {
-            businessCapability = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_CAPABILITY);
+            businessCapability = entityTypeEnumRepository.findByType("BUSINESS_CAPABILITY");
         }
         return businessCapability;
     }
 
     public EntityTypeEnum getTechEntityTypeEnum() {
         if (Objects.isNull(tech)) {
-            tech = entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.TECH);
+            tech = entityTypeEnumRepository.findByType("TECH");
         }
         return tech;
     }
@@ -45,6 +45,6 @@ public class EntityTypeEnumService {
         } catch (Exception e) {
             throw new BadRequestException("Неверно указан тип сущности");
         }
-        return entityTypeEnumRepository.findByType(EntityTypeEnum.CapabilitySubscriptionType.valueOf(typeName));
+        return entityTypeEnumRepository.findByType(typeName);
     }
 }
