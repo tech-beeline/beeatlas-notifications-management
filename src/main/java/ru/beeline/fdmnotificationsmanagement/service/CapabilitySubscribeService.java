@@ -314,6 +314,9 @@ public class CapabilitySubscribeService {
         log.info("start addSubscribe method");
         User user = userService.findByUserIdOrCreate(userId);
         EntityTypeEnum entityTypeEnum = entityTypeEnumRepository.findByType(entityType);
+        if (entityTypeEnum == null) {
+            throw new BadRequestException("Неверно указан тип сущности");
+        }
         final Entity entity = entityService.getEntityOrCreate(
                 generateLink(entityTypeEnum, entityId),
                 entityId,
