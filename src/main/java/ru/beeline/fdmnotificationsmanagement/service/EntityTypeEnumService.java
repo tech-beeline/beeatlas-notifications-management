@@ -40,11 +40,10 @@ public class EntityTypeEnumService {
     }
 
     public EntityTypeEnum getEntityTypeEnumByTypeName(String typeName) {
-        try {
-            EntityTypeEnum.CapabilitySubscriptionType.valueOf(typeName);
-        } catch (Exception e) {
-            throw new BadRequestException("Неверно указан тип сущности");
-        }
+            EntityTypeEnum entityTypeEnum = entityTypeEnumRepository.findByType(typeName);
+            if (entityTypeEnum == null) {
+                throw new BadRequestException("Неверно указан тип сущности");
+            }
         return entityTypeEnumRepository.findByType(typeName);
     }
 }
