@@ -261,7 +261,7 @@ public class CapabilitySubscribeService {
                         .filter(it -> it.getUser().equals(user))
                         .filter(Subscribe::getAutoSubChildren)
                         .count();
-                if (EntityTypeEnum.CapabilitySubscriptionType.BUSINESS_CAPABILITY.equals(entityTypeEnum.getType())
+                if ("BUSINESS_CAPABILITY".equals(entityTypeEnum.getType())
                         && countSubscriptions > 0l
                 ) {
                     businessCapabilityProcess(entityId, user);
