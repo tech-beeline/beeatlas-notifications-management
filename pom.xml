@@ -10,7 +10,7 @@
     </parent>
     <groupId>ru.beeline</groupId>
     <artifactId>fdm-notifications-management</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
     <name>fdm-notifications-management</name>
     <description>fdm-notifications-management</description>
     <properties>
@@ -49,11 +49,6 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-opentracing-shim</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ru.beeline</groupId>
-            <artifactId>fdm-lib</artifactId>
-            <version>0.0.24</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

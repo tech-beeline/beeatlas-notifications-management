@@ -9,8 +9,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import ru.beeline.fdmlib.dto.auth.EmailResponseDTO;
-import ru.beeline.fdmlib.dto.auth.UserProfileShortDTO;
+import ru.beeline.fdmnotificationsmanagement.dto.auth.EmailResponseDTO;
+import ru.beeline.fdmnotificationsmanagement.dto.auth.UserProfileShortDTO;
 import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
 import ru.beeline.fdmnotificationsmanagement.exception.ForbiddenException;
 
