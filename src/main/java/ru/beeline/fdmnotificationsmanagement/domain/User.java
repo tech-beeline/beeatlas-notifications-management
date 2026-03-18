@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 PJSC VimpelCom
+ */
+
 package ru.beeline.fdmnotificationsmanagement.domain;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;

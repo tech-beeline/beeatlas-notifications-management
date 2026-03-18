@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 PJSC VimpelCom
+ */
+
 package ru.beeline.fdmnotificationsmanagement.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
