@@ -1,0 +1,514 @@
+/*
+ * Copyright (c) 2024 PJSC VimpelCom
+ */
+
+package ru.beeline.fdmnotificationsmanagement.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import ru.beeline.fdmnotificationsmanagement.dto.capability.BusinessCapabilityChildrenIdsDTO;
+import ru.beeline.fdmnotificationsmanagement.client.CapabilityClient;
+import ru.beeline.fdmnotificationsmanagement.domain.*;
+import ru.beeline.fdmnotificationsmanagement.dto.CapabilityParentDTO;
+import ru.beeline.fdmnotificationsmanagement.dto.GetUserSubscribeDTO;
+import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
+import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
+import ru.beeline.fdmnotificationsmanagement.repository.EntityRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.EntityTypeEnumRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.SubscribeRepository;
+import ru.beeline.fdmnotificationsmanagement.repository.UserRepository;
+
+import javax.transaction.Transactional;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@Transactional
+public class CapabilitySubscribeService {
+
+    @Value("${integration.frontend-server-url}")
+    private String frontendServerUrl;
+
+    @Autowired
+    private EntityRepository entityRepository;
+
+    @Autowired
+    private EntityTypeEnumService entityTypeEnumService;
+
+    @Autowired
+    private EntityTypeEnumRepository entityTypeEnumRepository;
+
+    @Autowired
+    private EntityChangeService entityChangeService;
+
+    @Autowired
+    private NotifyService notifyService;
+
+    @Autowired
+    private CapabilityClient capabilityClient;
+
+    @Autowired
+    private SubscribeRepository subscribeRepository;
+
+    @Autowired
+    private EntityService entityService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public void updateSubscribeBusinessCapability(Integer entityId, String name, String changeType, Integer childrenId) {
+        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+        updateSubscribe(entityId, entityTypeEnum, name, changeType, childrenId);
+    }
+
+    public void updateSubscribeTechCapability(Integer entityId, String entityName, String changeType,
+                                              Integer childrenId) {
+        EntityTypeEnum entityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
+        updateSubscribe(entityId, entityTypeEnum, entityName, changeType, childrenId);
+    }
+
+    public void createSubscribeTechCapability(Integer entityId, String entityName, Integer childrenId) {
+        CapabilityParentDTO capabilityParentDTO = capabilityClient.getTechCapabilityParents(entityId);
+        if (capabilityParentDTO != null) {
+            log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
+            Entity entity = entityRepository.findByEntityIdAndEntityType(entityId,
+                    entityTypeEnumService.getTechCapabilityEntityTypeEnum());
+            if (capabilityParentDTO != null && entity == null) {
+                createSubscribe(entityId,
+                        capabilityParentDTO,
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityTypeEnumService.getTechCapabilityEntityTypeEnum(),
+                        entityName, childrenId);
+            }
+        }
+    }
+
+    public void createSubscribeBusinessCapability(Integer entityId, String entityName, Integer childrenId) {
+        CapabilityParentDTO capabilityParentDTO = capabilityClient.getBusinessCapabilityParents(entityId);
+        if (capabilityParentDTO != null) {
+            log.info("capabilityParentIDs: " + capabilityParentDTO.getParents().toString());
+            Entity entity = entityRepository.findByEntityIdAndEntityType(entityId,
+                    entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
+            if (capabilityParentDTO != null && entity == null) {
+                createSubscribe(entityId,
+                        capabilityParentDTO,
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(),
+                        entityName, childrenId);
+            }
+        }
+    }
+
+    private void updateSubscribe(Integer entityId, EntityTypeEnum entityTypeEnum, String entityName, String changeType,
+                                 Integer childrenId) {
+        Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
+        if (entity != null) {
+            log.info("entityID: " + entity.getId());
+            if (entityName != null) {
+                if (!entityName.isEmpty() && !entityName.equals(entity.getName())) {
+                    entity.setName(entityName);
+                    entityService.save(entity);
+                }
+            }
+            List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
+            if (!subscribes.isEmpty()) {
+                subscribes.forEach(subscribe -> {
+                    EntityChange entityChange = EntityChange.builder()
+                            .entity(subscribe.getEntity())
+                            .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                            .childrenEntityId(childrenId)
+                            .changeType(changeType)
+                            .build();
+                    entityChange = entityChangeService.save(entityChange);
+                    Notify notify = Notify.builder()
+                            .user(subscribe.getUser())
+                            .webNotify(false)
+                            .emailNotify(false)
+                            .entityChange(entityChange)
+                            .build();
+                    notifyService.save(notify);
+                });
+            }
+        }
+    }
+
+    private void createSubscribe(Integer entityId,
+                                 CapabilityParentDTO capabilityParentDTO,
+                                 EntityTypeEnum entityTypeEnumForFind,
+                                 EntityTypeEnum entityTypeEnumForCreate,
+                                 String entityName,
+                                 Integer childrenId) {
+        List<Subscribe> subscribes = subscribeRepository.findByAutoSubChildrenTrue();
+        log.info("subscribes: " + subscribes.stream().map(Subscribe::getId).collect(Collectors.toList()).toString());
+        if (!subscribes.isEmpty()) {
+            List<Entity> entities = subscribes.stream()
+                    .map(Subscribe::getEntity)
+                    .filter(entity -> entity.getEntityType().getType().equals(entityTypeEnumForFind.getType()))
+                    .filter(entity -> capabilityParentDTO.getParents().contains(entity.getEntityId()))
+                    .toList();
+            log.info("entities: " + entities.stream().map(Entity::getId).collect(Collectors.toList()).toString());
+            if (!entities.isEmpty()) {
+                Entity entity = entityService.save(Entity.builder()
+                        .entityId(entityId)
+                        .name(entityName)
+                        .link(generateLink(entityTypeEnumForCreate, entityId))
+                        .entityType(entityTypeEnumForCreate)
+                        .build());
+                EntityChange entityChange = entityChangeService.save(
+                        EntityChange.builder()
+                                .changeType("CREATE")
+                                .entity(entity)
+                                .childrenEntityId(childrenId)
+                                .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                                .build());
+                Set<User> users = entities.stream()
+                        .flatMap(ent -> ent.getSubscribes().stream())
+                        .map(Subscribe::getUser)
+                        .collect(Collectors.toSet());
+
+                List<Subscribe> newSubscribes = users.stream()
+                        .map(user -> Subscribe.builder()
+                                .entity(entity)
+                                .user(user)
+                                .autoSubChildren(false)
+                                .build())
+                        .collect(Collectors.toList());
+
+                subscribeRepository.saveAll(newSubscribes);
+
+                List<Notify> notifies = users.stream()
+                        .map(user -> Notify.builder()
+                                .user(user)
+                                .webNotify(false)
+                                .emailNotify(false)
+                                .entityChange(entityChange)
+                                .build())
+                        .collect(Collectors.toList());
+                notifyService.saveAll(notifies);
+            }
+        }
+    }
+
+    public List<Integer> getAllEntitySubscribeByUserIdAndEntityType(Integer userId, String entityType) {
+        log.info(String.format("getAllEntitySubscribeByUserIdAndEntityType userId =%s, entityType=%s", userId, entityType));
+        User user = userService.findByUserId(userId);
+        log.info(String.format("user=%s", user));
+        if (user != null) {
+            EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+            log.info(String.format("entityTypeEnum=%s", entityTypeEnum));
+            List<Integer> entityIds = subscribeRepository.findAllEntityIdsByUserAndEntityEntityType(user, entityTypeEnum);
+            log.info(String.format("entityIds=%s", entityIds));
+            return entityIds;
+        }
+        return new ArrayList<>();
+    }
+
+    public List<GetUserSubscribeDTO> getUserSubscribes(String entityType, Integer userId) {
+        List<GetUserSubscribeDTO> result = new ArrayList<>();
+        User user = userRepository.findByUserId(userId);
+        if (user != null) {
+            List<Subscribe> subscribes = subscribeRepository.findAllByUser(user);
+            if (!subscribes.isEmpty()) {
+                List<Integer> entityIds = subscribes.stream()
+                        .map(Subscribe::getEntity)
+                        .map(Entity::getId)
+                        .collect(Collectors.toList());
+                List<Entity> entities;
+                if (entityType != null && !entityType.isEmpty()) {
+                    EntityTypeEnum entityTypeEnum;
+                    try {
+                        entityTypeEnum = entityTypeEnumRepository.findByType(entityType);
+                    } catch (IllegalArgumentException e) {
+                        log.info("❌ Некорректное значение entityType: {} ", entityType);
+                        return new ArrayList<>();
+                    }
+                    if (entityTypeEnum == null) {
+                        log.info("❌ Запись с entityType: {}, не найдена", entityType);
+                        return new ArrayList<>();
+                    }
+                    entities = entityRepository.findAllByIdInAndEntityType(entityIds, entityTypeEnum);
+                } else {
+                    entities = entityRepository.findAllByIdIn(entityIds);
+                }
+                entities.forEach(entity -> result.add(GetUserSubscribeDTO.builder()
+                        .id(entity.getEntityId())
+                        .name(entity.getName())
+                        .entityType(entity.getEntityType().getType())
+                        .build()));
+            }
+        }
+        return result;
+    }
+
+    public void deleteSubscribe(Integer entityId, Integer userId, String entityType) {
+        log.info("start deleteSubscribe method");
+        User user = userService.findByUserId(userId);
+        if (user != null) {
+            EntityTypeEnum entityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+            if (entityTypeEnum != null) {
+                Entity entity = entityService.findByEntityIdAndEntityType(entityId, entityTypeEnum);
+                if (entity == null) {
+                    throw new BadRequestException(String.format("400 Сущность с id '%s' и типом '%s' не найдена",
+                            entityId, entityType));
+                }
+                long countSubscriptions = entity.getSubscribes().stream()
+                        .filter(it -> it.getUser().equals(user))
+                        .filter(Subscribe::getAutoSubChildren)
+                        .count();
+                if ("BUSINESS_CAPABILITY".equals(entityTypeEnum.getType())
+                        && countSubscriptions > 0l
+                ) {
+                    businessCapabilityProcess(entityId, user);
+                }
+                dropSubscribe(List.of(entity), user);
+                log.info("deleteSubscribe method completed");
+            }
+        }
+    }
+
+    private void businessCapabilityProcess(Integer entityId, User user) {
+        log.info("start capabilityClient.getBusinessCapabilityKidsById");
+        BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
+        log.info("capabilityClient.getBusinessCapabilityKidsById completed");
+        if (businessCapabilityChildrenIdsDTO != null) {
+            List<Integer> techCapabilityIds = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
+                    .map(Long::intValue)
+                    .collect(Collectors.toList());
+            EntityTypeEnum techCapabilityEntityTypeEnum = entityTypeEnumService.getTechCapabilityEntityTypeEnum();
+            List<Entity> entities = entityService.findAllByEntityIdInAndEntityType(
+                    techCapabilityIds, techCapabilityEntityTypeEnum);
+
+            List<Integer> businessCapabilityIds = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
+                    .map(Long::intValue)
+                    .collect(Collectors.toList());
+            EntityTypeEnum businessCapabilityEntityTypeEnum = entityTypeEnumService.getBusinessCapabilityEntityTypeEnum();
+            entities.addAll(entityService.findAllByEntityIdInAndEntityType(
+                    businessCapabilityIds, businessCapabilityEntityTypeEnum));
+            log.info("the list of entities is filled in");
+            log.info("dropSubscribe start");
+            dropSubscribe(entities, user);
+        }
+    }
+
+    private void dropSubscribe(List<Entity> entities, User user) {
+        if (entities != null && !entities.isEmpty()) {
+            List<Integer> entityIds = entities.stream()
+                    .map(Entity::getId)
+                    .collect(Collectors.toList());
+            subscribeRepository.deleteAllByUserIdAndEntityIdIn(user.getId(), entityIds);
+            notifyService.deleteAllByUserAndWebNotifyOrEmailNotifyAndEntityChangeIn(
+                    user.getId(),
+                    false,
+                    false,
+                    entityIds);
+        }
+    }
+
+    public void addSubscribe(Integer entityId, Integer userId, String entityType, boolean subChildren, String name) {
+        log.info("start addSubscribe method");
+        User user = userService.findByUserIdOrCreate(userId);
+        EntityTypeEnum entityTypeEnum = entityTypeEnumRepository.findByType(entityType);
+        if (entityTypeEnum == null) {
+            throw new BadRequestException("Неверно указан тип сущности");
+        }
+        final Entity entity = entityService.getEntityOrCreate(
+                generateLink(entityTypeEnum, entityId),
+                entityId,
+                entityTypeEnum,
+                name);
+        boolean autoSubChildren = entityType.equals("BUSINESS_CAPABILITY") && subChildren;
+        Subscribe subscribe = subscribeRepository.findByUserAndEntity(user, entity);
+        if (subscribe == null) {
+            createSubscribes(entity, user, autoSubChildren);
+        } else {
+            subscribe.setAutoSubChildren(autoSubChildren);
+            subscribeRepository.save(subscribe);
+        }
+        if (autoSubChildren) {
+            log.info("capabilityClient.getBusinessCapabilityKidsById(entityId): ");
+            BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO = capabilityClient.getBusinessCapabilityKidsById(entityId);
+            if (businessCapabilityChildrenIdsDTO == null) {
+                throw new EntityNotFoundException("Business Capability с данным Id не найдено");
+            }
+            log.info("techCapability childrenDTO size: " + businessCapabilityChildrenIdsDTO.getTechCapability().size());
+            log.info("businessCapability childrenDTO size: " + businessCapabilityChildrenIdsDTO.getBusinessCapability().size());
+            List<Entity> resultTechEntityList = getEntityTcOrCreate(businessCapabilityChildrenIdsDTO);
+            List<Entity> resultBusinessEntityList = getEntityBcOrCreate(businessCapabilityChildrenIdsDTO);
+            findOrCreateSubscribes(resultTechEntityList, user, false);
+            findOrCreateSubscribes(resultBusinessEntityList, user, true);
+            log.info("method addSubscribe completed");
+        }
+    }
+
+    private void findOrCreateSubscribes(List<Entity> entities, User user, boolean autoSubChildren) {
+        log.info("findOrCreateSubscribes start");
+        List<Subscribe> existingSubscribes = subscribeRepository.findByUserAndEntityIn(user, entities);
+        if (autoSubChildren) {
+            existingSubscribes.forEach(subscribe -> subscribe.setAutoSubChildren(true));
+        }
+        List<Subscribe> newSubscribes = entities.stream()
+                .filter(entity -> !existingSubscribes.stream()
+                        .map(Subscribe::getEntity)
+                        .collect(Collectors.toSet())
+                        .contains(entity))
+                .map(entity -> Subscribe.builder()
+                        .user(user)
+                        .entity(entity)
+                        .autoSubChildren(autoSubChildren)
+                        .build())
+                .collect(Collectors.toList());
+        subscribeRepository.saveAll(newSubscribes);
+        log.info("findOrCreateSubscribes completed");
+    }
+
+    private List<Entity> getEntityTcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
+        log.info("getEntityTcOrCreate");
+        List<Entity> resultTechEntityList = entityRepository.findAllByEntityIdInAndEntityType(
+                new ArrayList<>(businessCapabilityChildrenIdsDTO.getTechCapability().stream()
+                        .map(Long::intValue)
+                        .collect(Collectors.toSet())),
+                entityTypeEnumService.getTechCapabilityEntityTypeEnum());
+
+        List<Entity> newTcEntities = businessCapabilityChildrenIdsDTO.getTechCapability().stream()
+                .map(Long::intValue)
+                .filter(id -> resultTechEntityList.stream()
+                        .map(Entity::getEntityId)
+                        .noneMatch(foundId -> foundId.equals(id)))
+                .map(id -> Entity.builder()
+                        .entityId(id)
+                        .link(generateLink(entityTypeEnumService.getTechCapabilityEntityTypeEnum(), id))
+                        .entityType(entityTypeEnumService.getTechCapabilityEntityTypeEnum())
+                        .build())
+                .collect(Collectors.toList());
+        resultTechEntityList.addAll(entityRepository.saveAll(newTcEntities));
+        return resultTechEntityList;
+    }
+
+    private List<Entity> getEntityBcOrCreate(BusinessCapabilityChildrenIdsDTO businessCapabilityChildrenIdsDTO) {
+        log.info("getEntityBcOrCreate");
+        List<Entity> resultBusinessEntityList = entityRepository.findAllByEntityIdInAndEntityType(
+                new ArrayList<>(businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
+                        .map(Long::intValue)
+                        .collect(Collectors.toSet())),
+                entityTypeEnumService.getBusinessCapabilityEntityTypeEnum());
+
+        List<Entity> newBcEntities = businessCapabilityChildrenIdsDTO.getBusinessCapability().stream()
+                .map(Long::intValue)
+                .filter(id -> resultBusinessEntityList.stream()
+                        .map(Entity::getEntityId)
+                        .noneMatch(foundId -> foundId.equals(id)))
+                .map(id -> Entity.builder()
+                        .entityId(id)
+                        .link(generateLink(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum(), id))
+                        .entityType(entityTypeEnumService.getBusinessCapabilityEntityTypeEnum())
+                        .build())
+                .collect(Collectors.toList());
+        resultBusinessEntityList.addAll(entityRepository.saveAll(newBcEntities));
+        return resultBusinessEntityList;
+    }
+
+    public void techQueueProcessor(int entityId, String name, String changeType, Integer childrenId) {
+        EntityTypeEnum techEntityTypeEnum = entityTypeEnumService.getTechEntityTypeEnum();
+        Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
+
+        if (entity != null) {
+            log.info("entityID: " + entity.getId());
+            if (name != null) {
+                if (!name.isEmpty() && !name.equals(entity.getName())) {
+                    entity.setName(name);
+                    entityService.save(entity);
+                }
+            }
+            List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
+            if (!subscribes.isEmpty()) {
+                subscribes.forEach(subscribe -> {
+                    EntityChange entityChange = EntityChange.builder()
+                            .entity(subscribe.getEntity())
+                            .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                            .childrenEntityId(childrenId)
+                            .changeType(changeType)
+                            .build();
+                    entityChange = entityChangeService.save(entityChange);
+                    Notify notify = Notify.builder()
+                            .user(subscribe.getUser())
+                            .webNotify(false)
+                            .emailNotify(false)
+                            .entityChange(entityChange)
+                            .build();
+                    notifyService.save(notify);
+                });
+            }
+        }
+    }
+
+    public void notificationQueue(Integer entityId, String name, String changeType, Integer childrenId, String entityType) {
+        EntityTypeEnum techEntityTypeEnum = entityTypeEnumService.getEntityTypeEnumByTypeName(entityType);
+        Entity entity = entityService.findByEntityIdAndEntityType(entityId, techEntityTypeEnum);
+
+        if (entity != null) {
+            log.info("entityID: " + entity.getId());
+            if (name != null) {
+                if (!name.isEmpty() && !name.equals(entity.getName())) {
+                    entity.setName(name);
+                    entityService.save(entity);
+                }
+            }
+            List<Subscribe> subscribes = subscribeRepository.findAllByEntity(entity);
+            if (!subscribes.isEmpty()) {
+                subscribes.forEach(subscribe -> {
+                    EntityChange entityChange = EntityChange.builder()
+                            .entity(subscribe.getEntity())
+                            .dateChange(Timestamp.valueOf(LocalDateTime.now()))
+                            .childrenEntityId(childrenId)
+                            .changeType(changeType)
+                            .build();
+                    entityChange = entityChangeService.save(entityChange);
+                    Notify notify = Notify.builder()
+                            .user(subscribe.getUser())
+                            .webNotify(false)
+                            .emailNotify(false)
+                            .entityChange(entityChange)
+                            .build();
+                    notifyService.save(notify);
+                });
+            }
+        }
+    }
+
+    private void createSubscribes(Entity entity, User user, boolean autoSubChildren) {
+        subscribeRepository.save(Subscribe.builder()
+                .user(user)
+                .entity(entity)
+                .autoSubChildren(autoSubChildren)
+                .build());
+    }
+
+    private String generateLink(EntityTypeEnum entityTypeEnum, Integer entityId) {
+        String path = "";
+        switch (entityTypeEnum.getType()) {
+            case "TECH_CAPABILITY":
+                path = frontendServerUrl + "/models/fdm?id=" + entityId + "&type=TECH";
+                break;
+            case "BUSINESS_CAPABILITY":
+                path = frontendServerUrl + "/models/fdm?id=" + entityId + "&type=BUSINESS";
+                break;
+            case "TECH":
+                path = frontendServerUrl + "/models/tech-radar?id=" + entityId;
+                break;
+            default:
+                path = frontendServerUrl + "/models";
+        }
+        return path;
+    }
+
+}

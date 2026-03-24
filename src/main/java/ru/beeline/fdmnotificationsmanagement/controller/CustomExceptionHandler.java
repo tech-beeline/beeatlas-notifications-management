@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2024 PJSC VimpelCom
+ */
+
+package ru.beeline.fdmnotificationsmanagement.controller;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import ru.beeline.fdmnotificationsmanagement.exception.BadRequestException;
+import ru.beeline.fdmnotificationsmanagement.exception.EntityNotFoundException;
+import ru.beeline.fdmnotificationsmanagement.exception.ForbiddenException;
+import ru.beeline.fdmnotificationsmanagement.exception.ServerNotFoundException;
+
+@ControllerAdvice
+@Slf4j
+public class CustomExceptionHandler {
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Object> handleException(ForbiddenException e) {
+        log.error(e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .header("content-type", MediaType.APPLICATION_JSON_VALUE)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Object> handleException(RuntimeException e) {
+        log.error(e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .header("content-type", MediaType.APPLICATION_JSON_VALUE)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(NumberFormatException.class)
+    public ResponseEntity<Object> handleException(NumberFormatException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleException(BadRequestException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header("content-type", MediaType.APPLICATION_JSON_VALUE)
+                .body(e.getMessage());
+    }
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleException(EntityNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .header("content-type", MediaType.APPLICATION_JSON_VALUE)
+                .body(e.getMessage());
+    }
+
+    @ExceptionHandler(ServerNotFoundException.class)
+    public ResponseEntity<Object> handleException(ServerNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .header("content-type", MediaType.APPLICATION_JSON_VALUE)
+                .body(e.getMessage());
+    }
+}

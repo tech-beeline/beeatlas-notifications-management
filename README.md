@@ -1,1 +1,3 @@
-# -beeatlas-notifications-management
+# fdm-notifications-management
+
+## Getting started

@@ -1,0 +1,1 @@
+ALTER TABLE notification.business_notify ADD COLUMN name text;
