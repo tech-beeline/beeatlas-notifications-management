@@ -82,7 +82,7 @@ services:
       INTEGRATION_CAPABILITY_SERVER_URL: "http://capability-service"
       INTEGRATION_FRONTEND_SERVER_URL: "http://frontend-service"
       INTEGRATION_AUTH_SERVER_URL: "http://auth-service"
-      INTEGRATION_AUTHSSO_SERVER_URL: "http://auth-service"
+      INTEGRATION_AUTHSSO_SERVER_URL: "http://auth-sso-service"
       OTEL_EXPORTER_OTLP_ENDPOINT: "otlp-endpoint"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -100,5 +100,5 @@ networks:
     driver: bridge
 
 volumes:
-  notification-service-postgres:
+  notifications-service-postgres:
   rabbitmq_data:
