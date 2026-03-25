@@ -90,7 +90,7 @@ services:
       timeout: 3s
       retries: 15
     ports:
-      - "${PRODUCTS_SERVICE_PORT:-8081}:8080"
+      - "${NOTIFICATIONS_SERVICE_PORT:-8081}:8080"
     networks:
       - beeatlas-network
     restart: unless-stopped
