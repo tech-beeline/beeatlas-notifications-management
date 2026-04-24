@@ -1,93 +1,146 @@
-# fdm-notifications-management
+# BeeAtlas Notifications Management
 
+Сервис управления подписками и отправкой уведомлений в рамках платформы BeeAtlas.
 
+## Что делает сервис
 
-## Getting started
+- хранит подписки пользователей на сущности;
+- принимает бизнес-события и формирует уведомления;
+- взаимодействует с RabbitMQ для обработки событий;
+- использует PostgreSQL для хранения данных;
+- применяет Flyway для миграций схемы БД.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Технологии
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+- Java 17
+- Spring Boot 2.7.x
+- Spring Web, Spring Data JPA, Spring AMQP
+- PostgreSQL
+- RabbitMQ
+- Flyway
+- Actuator + Prometheus metrics
 
-## Add your files
+## Быстрый старт (Docker Compose)
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+В репозитории есть `docker-compose.yml`, который поднимает:
 
+- `notifications-service` (приложение);
+- `notifications-service-postgres` (PostgreSQL);
+- `rabbitmq` (RabbitMQ + management UI).
+
+### 1) Запуск
+
+```bash
+docker compose up -d --build
 ```
-cd existing_repo
-git remote add origin https://git.vimpelcom.ru/products/eafdmmart/fdm-notifications-management.git
-git branch -M main
-git push -uf origin main
+
+### 2) Проверка состояния
+
+```bash
+docker compose ps
+curl http://localhost:8081/actuator/health
 ```
 
-## Integrate with your tools
+По умолчанию приложение доступно на `http://localhost:8081`.
 
-- [ ] [Set up project integrations](https://git.vimpelcom.ru/products/eafdmmart/fdm-notifications-management/-/settings/integrations)
+## Локальный запуск без Docker
 
-## Collaborate with your team
+### Требования
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+- JDK 17
+- Maven 3.8+
+- PostgreSQL 15+
+- RabbitMQ 3.x
 
-## Test and Deploy
+### Шаги
 
-Use the built-in continuous integration in GitLab.
+1. Поднимите PostgreSQL и RabbitMQ.
+2. Настройте переменные окружения (см. ниже).
+3. Запустите приложение:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```bash
+mvn clean spring-boot:run
+```
 
-***
+## Переменные окружения
 
-# Editing this README
+Ниже ключевые переменные, которые используются при запуске в Docker Compose:
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### PostgreSQL
 
-## Suggestions for a good README
+- `NOTIFICATIONS_POSTGRES_HOST` (по умолчанию: `notifications-service-postgres`)
+- `NOTIFICATIONS_POSTGRES_DB` (по умолчанию: `notifications_service`)
+- `NOTIFICATIONS_POSTGRES_USER` (по умолчанию: `postgres`)
+- `NOTIFICATIONS_POSTGRES_PASSWORD` (по умолчанию: `postgres`)
+- `NOTIFICATIONS_SERVICE_POSTGRES_NODEPORT` (по умолчанию: `5433`)
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### RabbitMQ
 
-## Name
-Choose a self-explaining name for your project.
+- `RABBITMQ_HOST` (по умолчанию: `rabbitmq`)
+- `RABBITMQ_PORT` (по умолчанию: `5672`)
+- `RABBITMQ_USER` (по умолчанию: `guest`)
+- `RABBITMQ_PASSWORD` (по умолчанию: `guest`)
+- `RABBITMQ_VHOST` (по умолчанию: `/`)
+- `RABBITMQ_EXCHANGE` (по умолчанию: `capability.exchange`)
+- `RABBITMQ_ROUTING_KEY` (по умолчанию: `capability.routing`)
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Внешние интеграции
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- `INTEGRATION_CAPABILITY_SERVER_URL`
+- `INTEGRATION_FRONTEND_SERVER_URL`
+- `INTEGRATION_AUTH_SERVER_URL`
+- `INTEGRATION_AUTHSSO_SERVER_URL`
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+### Наблюдаемость
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- `OTEL_EXPORTER_OTLP_ENDPOINT`
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Основные HTTP эндпоинты
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Базовые маршруты сервиса:
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+- `GET /` - базовый endpoint доступности приложения;
+- `GET /api/v1/subscribe/{entityType}` - подписки по типу сущности;
+- `GET /api/v1/subscribe` - подписки текущего пользователя;
+- `POST /api/v1/subscribe/{entityType}/{id}` - подписаться на сущность;
+- `DELETE /api/v1/subscribe/{entityType}/{id}` - отписаться от сущности;
+- `GET /api/v1/business/notify` - получение бизнес-уведомлений;
+- `GET /api/v1/notify/change-type` - список типов изменений;
+- `GET /api/v1/notify/entity-type` - список типов сущностей;
+- `POST /api/v1/notify/business-event/{entity_type}/{entity_id}` - отправка бизнес-события;
+- `POST /api/v1/notify/business-event/group/role/{role}/{entity_type}/{entity_id}` - отправка события для группы/роли.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## Actuator и метрики
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+- Health: `GET /actuator/health`
+- Info: `GET /actuator/info`
+- Metrics: `GET /actuator/metrics`
+- Prometheus: `GET /actuator/prometheus`
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## Swagger
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+Для API-документации используется Springfox. Обычно UI доступен по адресу:
 
-## License
-For open source projects, say how it is licensed.
+- `http://localhost:8081/swagger-ui/`
+- или `http://localhost:8081/swagger-ui/index.html`
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+## Сборка и тесты
+
+```bash
+mvn clean package
+mvn test
+```
+
+## Структура очередей RabbitMQ
+
+При старте Docker Compose автоматически создаются очереди:
+
+- `tech_queue`
+- `notification`
+- `change_tech_capability`
+- `change_business_capability`
+- `tech_capability`
+
+## Лицензия
+
+Проект распространяется в соответствии с файлом `LICENSE`.

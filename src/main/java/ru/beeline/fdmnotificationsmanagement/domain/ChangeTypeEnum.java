@@ -1,0 +1,26 @@
+/*
+ * Copyright (c) 2024 PJSC VimpelCom
+ */
+
+package ru.beeline.fdmnotificationsmanagement.domain;
+
+import lombok.Data;
+
+import javax.persistence.Entity;
+import javax.persistence.*;
+
+@Data
+@Entity
+@Table(name = "change_type_enum", schema = "notification")
+public class ChangeTypeEnum {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
+    @Column(name = "name")
+    private String  name;
+
+    @Column(name = "description")
+    private String  description;
+}
